@@ -1,5 +1,5 @@
-# dukefy
-A Duke Nukem 3D map viewer.
+# Dukefy
+A tool for viewing Duke Nukem 3D maps.
 
 # DEMO
 https://phcs93.github.io/dukefy/
