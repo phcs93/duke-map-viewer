@@ -14,8 +14,14 @@ svg {
     height: 100%;
 }
 
-/* @media only screen and (min-width: 768px) {
-    body {
-        margin: 0px 0px 0px calc(300px + 48px);
-    }
-} */
+select, input[type="number"], input[type="text"] {
+    font-family: "Segoe UI";
+    font-size: 16px;
+    height: 32px;
+    padding-left: 8px;
+    padding-right: 8px;
+    color: lightgray;
+    background-color: #090909;
+    border-radius: 5px;
+    border: 1px solid #2B2B2B;
+}

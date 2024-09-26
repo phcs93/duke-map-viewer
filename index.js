@@ -1,14 +1,32 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-    document.querySelector("input").onchange = e => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const bytes = new Uint8Array(reader.result)
-            const map = new Map(bytes);
-            render(map);
-        };
-        reader.readAsArrayBuffer(e.target.files[0]);        
-    };    
+    const database = JSON.parse(pako.ungzip(await (await fetch("bin/database.gzip")).arrayBuffer(), { to: "string" }));
+
+    document.getElementById("maps").innerHTML = database.map(map => `
+        <option value="${map.name}">${map.name}</option>
+    `);
+
+    document.getElementById("maps").onchange = async e => {
+        await load(e.target.value);
+    };
+
+    async function load (name) {
+        const bytes = await (await fetch(`res/maps/${name}.map`)).arrayBuffer();
+        const map = new Map(new Uint8Array(bytes));
+        render(map);
+    }
+
+    await load(document.getElementById("maps").value);
+
+    // document.querySelector("input").onchange = e => {
+    //     const reader = new FileReader();
+    //     reader.onload = () => {
+    //         const bytes = new Uint8Array(reader.result);
+    //         const map = new Map(bytes);
+    //         render(map);
+    //     };
+    //     reader.readAsArrayBuffer(e.target.files[0]);        
+    // };    
 
 });
 
