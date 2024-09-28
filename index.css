@@ -1,3 +1,5 @@
+[data-visible="false"] { display: none !important; }
+
 * {
     font-family: 'Segoe UI';
     color: lightgray;
@@ -5,16 +7,39 @@
 
 body {
     margin: 0px;
-    padding: 8px;
-    background-color: #060606;
+    padding: 0px;
+    background-image: url(./res/images/bg.jpg);
 }
 
-svg {
+div {
+    box-sizing: border-box;
+}
+
+div.page {  
+    margin: 16px;
+}
+
+.filter {
+    margin: 8px 8px 0px 8px;
+}
+
+label {
+    font-family: "Candara";
+    font-size: 14px;
+    font-weight: bold;
+    height: 32px;
+    line-height: 32px;
+    color: lightgray;    
+}
+
+hr {
     width: 100%;
-    height: 100%;
+    margin: 0px;
+    border: none;
+    border-bottom: 1px solid #2B2B2B;
 }
 
-select, input[type="number"], input[type="text"] {
+select, input {
     font-family: "Segoe UI";
     font-size: 16px;
     height: 32px;
@@ -24,4 +49,202 @@ select, input[type="number"], input[type="text"] {
     background-color: #090909;
     border-radius: 5px;
     border: 1px solid #2B2B2B;
+    width: calc(100% - 16px);
+}
+
+div.horizontal-scroll {
+    overflow-y: auto;
+}
+
+/* filter page */
+
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    background-color: #1E1E1E;
+    border-radius: 5px;
+    & thead {
+        position: sticky;
+        top: 0;
+        & tr {       
+            border-radius: 5px;     
+            background-color: #101010;
+            & th {                
+                border: right;
+                padding: 8px 0;
+                width: 128px;
+                min-width: 128px;
+            }
+        }
+    }
+    & tbody {
+        & tr {
+            border-radius: 5px;
+            &:hover {
+                background-color: #2E2E2E;
+            }
+        }
+    }
+}
+
+/* map page */
+
+div#map-details {
+    background-color: #101010;
+    box-shadow: 0px 0px 5px black;
+    border-radius: 10px;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    height: calc(100vh - 32px);    
+    overflow-x: hidden;
+    overflow-y: scroll;    
+    width: calc(256px + 32px);
+    & input, & select {
+        width: 100%;        
+    }
+    & a {
+        text-decoration: none;
+    }
+    &::-webkit-scrollbar {            
+        background-color: transparent;
+        height: 4px;
+        width: 4px;
+    }    
+    &::-webkit-scrollbar-track {
+        background-color: transparent;    
+    }    
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 10px;
+    }   
+    &:hover::-webkit-scrollbar-thumb {
+        background-color: #434343;
+    }    
+}
+
+div#map-preview {
+    margin-left: calc(256px + 32px + 16px);
+}
+
+svg {
+    width: 100%;
+    height: calc(100vh - 32px);
+    border: 1px solid gray;
+}
+
+/* flex */
+
+div.flex-columns {
+    display: flex;
+    flex-direction: row;
+}
+
+div.flex-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+div.gap-16 {
+    gap: 16px;
+}
+
+div.gap-8 {
+    gap: 8px;
+}
+
+div.justify-center {
+    justify-content: center;
+}
+
+div.align-center {
+    align-items: center;
+}
+
+div.wrap {
+    flex-wrap: wrap;
+}
+
+div.grow {
+    display: flex;
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+div.shrink {
+    flex-shrink: 1;
+}
+
+div.no-shrink {
+    flex-shrink: 0;
+}
+
+div.margin-16 {
+    margin: 16px;
+}
+
+div.margin-8 {
+    margin: 8px;
+}
+
+div.padding-16 {
+    padding: 16px;
+}
+
+div.padding-8 {
+    padding: 8px;
+}
+
+div.padding-x-16 {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+div.padding-x-8 {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+div.self-center {
+    align-self: center;
+}
+
+div.self-start {
+    align-self: flex-start;
+}
+
+div.self-end {
+    align-self: flex-end;
+}
+
+div.items-start {
+    align-items: flex-start;
+}
+
+div.items-end {
+    align-items: flex-end;
+}
+
+div.space-between {
+    justify-content: space-between;
+}
+
+div.space-around {
+    justify-content: space-around;
+}
+
+div.space-evenly {
+    justify-content: space-evenly;
 }

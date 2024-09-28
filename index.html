@@ -11,7 +11,11 @@
 
         <script src="lib/pako.js"></script>
 
-        <script type="application/javascript" src="res/json/tiles-json.js"></script>
+        <script type="application/javascript" src="res/json/tiles-json.js"></script>        
+        <script type="application/javascript" src="src/models/grp.js"></script>
+        <script type="application/javascript" src="src/models/palette.js"></script>
+        <script type="application/javascript" src="src/models/lookup.js"></script>
+        <script type="application/javascript" src="src/models/art.js"></script>
         <script type="application/javascript" src="src/models/map.js"></script>
 
         <!-- index -->
@@ -22,11 +26,67 @@
 
     <body>
 
-        <select id="maps"></select>
+        <div class="flex-rows justify-center scroll">
 
-        <!-- <input type="file"> -->
+            <div id="map-filter-page" class="flex-rows page" data-visible="false">
 
-        <svg></svg>
+                <table id="maps-table" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th style="width: 32px !important; min-width: 32px !important;"></th>
+                            <th style="width: 200px !important; min-width: 200px !important;">NAME<input type="text" id="name-filter" class="filter" placeholder="filter by name"></th>
+                            <th>SPAWNS<input type="number" id="spawns-filter" class="filter" placeholder="at least"></th>
+                            <th>COOP</th>
+                            <th>WIDTH</th>
+                            <th>HEIGHT</th>
+                            <th>DEPTH</th>
+                            <th>PISTOL</th>
+                            <th>SHOTGUN</th>
+                            <th>CHAINGUN</th>
+                            <th>RPG</th>
+                            <th>PIPEBOMB</th>
+                            <th>SHRINKER</th>
+                            <th>EXPANDER</th>
+                            <th>DEVASTATOR</th>
+                            <th>FREEZER</th>
+                            <th>TRIPBOMB</th>
+                            <th style="width: 256px !important; min-width: 256px !important;">LAVA/ACID/PLASMA/RAIL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td>LOADING...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div id="map-details-page" class="flex-columns page grow" data-visible="false">
+
+                
+
+                <div id="map-details" class="flex-rows padding-16">
+
+                    <a href="?">&lt;&lt;&lt; BACK TO FILTER</a>
+
+                    <br>
+                    <hr>
+                    <br>
+
+                    <label>MAP</label>
+                    <select id="map-select"></select>
+
+                </div>
+
+                <div id="map-preview" class="grow">
+                    <svg id="map-svg"></svg>
+                </div>
+
+            </div>
+
+        </div>
 
     </body>
 

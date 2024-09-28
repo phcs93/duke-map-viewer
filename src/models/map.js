@@ -3,10 +3,14 @@ function Map (bytes) {
     let index = 0; 
 
     const b = (n) => bytes[index++] << n;
-    const byte = () => b(0);
+
+    const byte = () => (b(0) << 24) >> 24;
     const int16 = () => b(0)|b(8);
     const int32 = () => b(0)|b(8)|b(16)|b(24);
-    const int64 = () => b(0)|b(8)|b(16)|b(24)|b(32)|b(40)|b(48)|b(56);
+
+    const ubyte = () => byte() & 0xFF;
+    const uint16 = () => int16() & 0xFFFF;
+    const uint32 = () => int32() & 0xFFFFFFFF;
 
     this.version = int32();
     this.x = int32();
@@ -15,7 +19,7 @@ function Map (bytes) {
     this.a = int16();
     this.s = int16();
 
-    this.sectors = new Array(int16());
+    this.sectors = new Array(uint16());
 
     for (let i = 0; i < this.sectors.length; i++) {
         this.sectors[i] = {
@@ -28,24 +32,24 @@ function Map (bytes) {
             ceilingpicnum: int16(),
             ceilingheinum: int16(),
             ceilingshade: byte(),
-            ceilingpal: byte(),
-            ceilingxpanning: byte(),
-            ceilingypanning: byte(),
+            ceilingpal: ubyte(),
+            ceilingxpanning: ubyte(),
+            ceilingypanning: ubyte(),
             floorpicnum: int16(),
             floorheinum: int16(),
             floorshade: byte(),
-            floorpal: byte(),
-            floorxpanning: byte(),
-            floorypanning: byte(),
-            visibility: byte(),
-            filler: byte(),
+            floorpal: ubyte(),
+            floorxpanning: ubyte(),
+            floorypanning: ubyte(),
+            visibility: ubyte(),
+            filler: ubyte(),
             lotag: int16(),
             hitag: int16(),
             extra: int16()
         };
     }
 
-    this.walls = new Array(int16());
+    this.walls = new Array(uint16());
 
     for (let i = 0; i < this.walls.length; i++) {
         this.walls[i] = {
@@ -58,18 +62,18 @@ function Map (bytes) {
             picnum: int16(),
             overpicnum: int16(),
             shade: byte(),
-            pal: byte(),
-            xrepeat: byte(),
-            yrepeat: byte(),
-            xpanning: byte(),
-            ypanning: byte(),
+            pal: ubyte(),
+            xrepeat: ubyte(),
+            yrepeat: ubyte(),
+            xpanning: ubyte(),
+            ypanning: ubyte(),
             lotag: int16(),
             hitag: int16(),
             extra: int16()
         };
     }
 
-    this.sprites = new Array(int16());
+    this.sprites = new Array(uint16());
 
     for (let i = 0; i < this.sprites.length; i++) {
         this.sprites[i] = {	
@@ -79,11 +83,11 @@ function Map (bytes) {
             cstat: int16(),
             picnum: int16(),
             shade: byte(),
-            pal: byte(),
-            clipdist: byte(),
-            filler: byte(),
-            xrepeat: byte(),
-            yrepeat: byte(),
+            pal: ubyte(),
+            clipdist: ubyte(),
+            filler: ubyte(),
+            xrepeat: ubyte(),
+            yrepeat: ubyte(),
             xoffset: byte(),
             yoffset: byte(),
             sectnum: int16(),
@@ -101,4 +105,8 @@ function Map (bytes) {
 
 }
 
-//module.exports = Map;
+try {
+    module.exports = Map;
+} catch (e) {
+    // ignore
+}
