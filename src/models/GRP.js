@@ -18,6 +18,7 @@ function GRP (bytes) {
 
     for (let i = 0; i < this.files.length; i++) {
         this.files[i] = {
+            i, // temp
             name: new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("").replace(/\x00/g, ""),
             size: uint32(),
             bytes: []
