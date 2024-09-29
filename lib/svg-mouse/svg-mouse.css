@@ -1,0 +1,6 @@
+svg.mouse {
+    cursor: grab;
+    &:active {
+        cursor: grabbing;
+    }
+}

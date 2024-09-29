@@ -1,0 +1,1 @@
+Math.lerp = (a, b, v) => (1 - v) * a + v * b;

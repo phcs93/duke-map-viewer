@@ -1,8 +1,5 @@
 function Lookup (bytes) {
 
-    // linear interpolation
-    const lerp = (a, b, v) => (1 - v) * a + v * b;
-
     let index = 0; 
 
     const b = (n) => bytes[index++] << n;
@@ -28,9 +25,9 @@ function Lookup (bytes) {
 
     for (let i = 0; i < this.alternates.length; i++) {        
         this.alternates[i] = new Array(256).fill(0).map(() => [
-            lerp(0, 255, ubyte() / 64),
-            lerp(0, 255, ubyte() / 64),
-            lerp(0, 255, ubyte() / 64)
+            Math.lerp(0, 255, ubyte() / 64),
+            Math.lerp(0, 255, ubyte() / 64),
+            Math.lerp(0, 255, ubyte() / 64)
         ]);   
     }
 
@@ -56,9 +53,9 @@ function Lookup (bytes) {
         for (let i = 0; i < this.alternates.length; i++) {
             const alternate = this.alternates[i];
             for (const color of alternate) {
-                const r = lerp(0, 64, color[0] / 255);
-                const g = lerp(0, 64, color[1] / 255);
-                const b = lerp(0, 64, color[2] / 255);
+                const r = Math.lerp(0, 64, color[0] / 255);
+                const g = Math.lerp(0, 64, color[1] / 255);
+                const b = Math.lerp(0, 64, color[2] / 255);
                 byteArray.push(...[r,g,b]);
             }
         }
@@ -71,4 +68,10 @@ function Lookup (bytes) {
 
     };
 
+}
+
+try {
+    module.exports = Lookup;
+} catch (e) {
+    // ignore
 }

@@ -1,141 +1,15 @@
 const fs = require("fs");
 const zlib = require("zlib");
-const Map = require("./src/models/map.js");
-
-const Picnum = {
-    Effector: 1,
-    Spawn: 1405,
-    Weapons: {
-        Pistol: 21,
-        Shotgun: 28,
-        Chaingun: 22,
-        RPG: 23,
-        Pipebomb: 26,
-        Shrinker: 25,
-        Devastator: 29,
-        Freezer: 24,
-        Tripbomb: 27
-    },
-    Ammo: {
-        Pistol: 40,
-        Shotgun: 49,
-        Chaingun: 41,
-        RPG: 44,
-        Pipebomb: 47,
-        Shrinker: 46,
-        Expander: 45,
-        Devastator: 42,
-        Freezer: 37
-    },
-    Inventory: {
-        Medkit: 53,
-        Armor: 54,
-        Steroids: 55,
-        Scuba: 56,
-        JetPack: 57,
-        NightVision: 59,
-        Boots: 61,
-        Holoduke: 1348
-    },
-    Health: {
-        Small: 51,
-        Medium: 52,
-        Atomic: 100
-    },    
-    ProDuke: {
-        Flag: 5888
-    },
-    DamagingFloorTextures: {
-        FloorSlime: 200,
-        HurtRail: 859,
-        FloorPlasma: 1082,
-        PurpleLava: 4240
-    }
-};
-
-const EffectorTags = {
-    Pivot: 1,
-    Earthquake: 2,
-    RandomLightsAfterShotOut: 3,
-    RandomLights: 4,
-    HomingTurret: 5,
-    SubwayEngine: 6,
-    Teleporter: 7,
-    OpenDoorRoomLights: 8,
-    CloseDoorRoomLights: 9,
-    DoorAutoClose: 10,
-    SwingingDoorHinge: 11,
-    LightSwitch: 12,
-    Explosive: 13,
-    SubwayCar: 14,
-    SlidingDoor: 15,
-    RotateReactorSector: 16,
-    TransportElevator: 17,
-    IncrementalSectorRaiseFall: 18,
-    CeilingFallsFromExplosion: 19,
-    StretchingShrinkingSector: 20,
-    FloorRiseCeilingDrop: 21,
-    TeethDoor: 22,
-    OneWayTeleporterExit: 23,
-    ConveyorBelt: 24,
-    Piston: 25,
-    Escalator: 26,
-    DemoCamera: 27,
-    LightningBolt: 28,
-    FloatingSector: 29,
-    TwoWayTrain: 30,
-    RaiseLowerFloor: 31,
-    RaiseLowerCeiling: 32,
-    EarthquakeDebris: 33,
-    AlternativeConveyorBelt: 34,
-    Drill: 35,
-    AutomaticShooter: 36,
-    FloorOverFloor0: 40,
-    FloorOverFloor1: 41,
-    FloorOverFloor2: 42,
-    FloorOverFloor3: 43,
-    FloorOverFloor4: 44,
-    FloorOverFloor5: 45,
-    AdjustWall: 128,
-    Fireworks1: 130,
-    Fireworks2: 131
-};
-
-const SectorTags = {
-    AboveWaterSector: 1,
-    BelowWaterSector: 2,
-    Boss2RoamSector: 3,
-    StarTrekDoor: 9,
-    TransportElevator: 15,
-    ElevatorPlatformDown: 16,
-    ElevatorPlatformUp: 17,
-    ElevatorDown: 18,
-    ElevatorUp: 19,
-    CeilingDoor: 20,
-    FloorDoor: 21,
-    SplitDoor: 22,
-    SwingingDoor: 23,
-    Reserved: 24,
-    SlidingDoor: 25,
-    SplitStarTrekDoor: 26,
-    StretchingShrinkingSector: 27,
-    FloorRiseCeilingDrop: 28,
-    TeethDoor: 29,
-    RotateRiseSector: 30,
-    TwoWayTrain: 31,
-    OneTimeSound: 10000,
-    SecretPlace: 32767,
-    EndOfLevelWithMessage: 65534,
-    EndOfLevel: 65535
-}
+const Map = require("./src/models/Map.js");
+require("./src/enums/Pincum.js");
+require("./src/enums/EffectorTag.js");
+require("./src/enums/SectorTag.js");
 
 const json = [];
 
 for (const file of fs.readdirSync("./res/maps")) {
 
-    const bytes = fs.readFileSync(`./res/maps/${file}`);
-
-    const map = new Map(bytes);
+    const map = new Map(fs.readFileSync(`./res/maps/${file}`));
 
     json.push({
         name: file.toLowerCase().replace(".map", ""),
@@ -152,9 +26,18 @@ for (const file of fs.readdirSync("./res/maps")) {
                     teams[spawn.hitag]++;
                     return teams;
                 }, {})
+            },
+            nduke: {
+                flag: map.sprites.filter(s => s.picnum === Picnum.NDuke.Flag).length,
+                teams: map.sprites.filter(s => s.picnum === Picnum.Spawn && s.lotag === 0 && s.hitag > 0).reduce((teams, spawn) => {
+                    if (!teams[spawn.hitag]) teams[spawn.hitag] = 0;
+                    teams[spawn.hitag]++;
+                    return teams;
+                }, {})
             }
         },
         items: {
+            cards: map.sprites.filter(s => s.picnum === Picnum.Card).length,
             weapons: {
                 pistol: map.sprites.filter(s => s.picnum === Picnum.Weapons.Pistol).length,
                 shotgun: map.sprites.filter(s => s.picnum === Picnum.Weapons.Shotgun).length,
@@ -194,12 +77,12 @@ for (const file of fs.readdirSync("./res/maps")) {
                 atomic: map.sprites.filter(s => s.picnum === Picnum.Health.Atomic).length
             }
         },
-        effectors: Object.keys(EffectorTags).reduce((counters, tag) => {
-            counters[tag] = map.sprites.filter(s => s.picnum === Picnum.Effector && s.lotag === EffectorTags[tag]).length;
+        effectors: Object.keys(EffectorTag).reduce((counters, tag) => {
+            counters[tag] = map.sprites.filter(s => s.picnum === Picnum.Effector && s.lotag === EffectorTag[tag]).length;
             return counters;
         }, {}),
-        sectors: Object.keys(SectorTags).reduce((counters, tag) => {
-            counters[tag] = map.sectors.filter(s => s.lotag === SectorTags[tag]).length;
+        sectors: Object.keys(SectorTag).reduce((counters, tag) => {
+            counters[tag] = map.sectors.filter(s => s.lotag === SectorTag[tag]).length;
             return counters;
         }, {}),
         damagingFloor: map.sectors.some(s => Object.values(Picnum.DamagingFloorTextures).includes(s.floorpicnum))

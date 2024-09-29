@@ -130,7 +130,7 @@ div#map-preview {
 svg {
     width: 100%;
     height: calc(100vh - 32px);
-    border: 1px solid gray;
+    /* border: 1px solid gray; */
 }
 
 /* flex */

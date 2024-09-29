@@ -9,14 +9,22 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <script src="lib/pako.js"></script>
+        <script src="lib/pako.js"></script>   
 
-        <script type="application/javascript" src="res/json/tiles-json.js"></script>        
-        <script type="application/javascript" src="src/models/grp.js"></script>
-        <script type="application/javascript" src="src/models/palette.js"></script>
-        <script type="application/javascript" src="src/models/lookup.js"></script>
-        <script type="application/javascript" src="src/models/art.js"></script>
-        <script type="application/javascript" src="src/models/map.js"></script>
+        <script src="lib/svg-mouse/svg-mouse.js"></script>   
+        <link rel="stylesheet" href="lib/svg-mouse/svg-mouse.css">
+
+        <script type="application/javascript" src="src/enums/Pincum.js"></script>
+        <script type="application/javascript" src="src/enums/SpriteCstat.js"></script>
+
+        <script type="application/javascript" src="src/prototypes/Math.js"></script>
+        <script type="application/javascript" src="src/prototypes/Number.js"></script>
+
+        <script type="application/javascript" src="src/models/GRP.js"></script>
+        <script type="application/javascript" src="src/models/Palette.js"></script>
+        <script type="application/javascript" src="src/models/Lookup.js"></script>
+        <script type="application/javascript" src="src/models/Art.js"></script>
+        <script type="application/javascript" src="src/models/Map.js"></script>
 
         <!-- index -->
         <link rel="stylesheet" href="index.css">
@@ -81,7 +89,7 @@
                 </div>
 
                 <div id="map-preview" class="grow">
-                    <svg id="map-svg"></svg>
+                    <svg id="map-svg" class="mouse"></svg>
                 </div>
 
             </div>

@@ -47,7 +47,6 @@ function Art (bytes, name) {
         };
     }
 
-    // each tile will be represented as an array of arrays of bytes => [x][y] = palette index
     for (let i = 0; i < this.tiles.length; i++) {
         this.tiles[i] = [];
         for (let x = 0; x < this.tilesizx[i] ; x++) {
@@ -110,4 +109,10 @@ function Art (bytes, name) {
 
     };
 
+}
+
+try {
+    module.exports = Art;
+} catch (e) {
+    // ignore
 }

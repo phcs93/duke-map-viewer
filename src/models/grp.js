@@ -18,10 +18,14 @@ function GRP (bytes) {
 
     for (let i = 0; i < this.files.length; i++) {
         this.files[i] = {
-            i, // this is just to make the "getFile" calculation easier
             name: new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("").replace(/\x00/g, ""),
-            size: uint32()
+            size: uint32(),
+            bytes: []
         }        
+    }
+
+    for (let i = 0; i < this.files.length; i++) {
+        this.files[i].bytes = bytes.slice(index, index + this.files[i].size);
     }
 
     // read only the bytes from the desired file
@@ -46,4 +50,10 @@ function GRP (bytes) {
 
     }
 
+}
+
+try {
+    module.exports = GRP;
+} catch (e) {
+    // ignore
 }

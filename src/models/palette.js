@@ -1,8 +1,5 @@
 function Palette (bytes) {
 
-    // linear interpolation
-    const lerp = (a, b, v) => (1 - v) * a + v * b;
-
     let index = 0; 
 
     const b = (n) => bytes[index++] << n;
@@ -19,9 +16,9 @@ function Palette (bytes) {
 
     for (let i = 0; i < this.colors.length; i++) {
         // scale from 0...64 to 0...256 (DOS was limited)
-        const r = lerp(0, 255, ubyte() / 64);
-        const g = lerp(0, 255, ubyte() / 64);
-        const b = lerp(0, 255, ubyte() / 64);
+        const r = Math.lerp(0, 255, ubyte() / 64);
+        const g = Math.lerp(0, 255, ubyte() / 64);
+        const b = Math.lerp(0, 255, ubyte() / 64);
         this.colors[i] = [r, g, b];
     }
 
@@ -53,9 +50,9 @@ function Palette (bytes) {
         
         for (let i = 0; i < this.colors.length; i++) {
             const color = this.colors[i];
-            const r = lerp(0, 64, color[0] / 255);
-            const g = lerp(0, 64, color[1] / 255);
-            const b = lerp(0, 64, color[2] / 255);
+            const r = Math.lerp(0, 64, color[0] / 255);
+            const g = Math.lerp(0, 64, color[1] / 255);
+            const b = Math.lerp(0, 64, color[2] / 255);
             byteArray.push(...[r,g,b]);
         }
        
@@ -73,4 +70,10 @@ function Palette (bytes) {
 
     };
 
+}
+
+try {
+    module.exports = Palette;
+} catch (e) {
+    // ignore
 }
