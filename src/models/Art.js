@@ -1,6 +1,6 @@
 function Art (bytes, name) {
 
-    this.name = name;
+    this.Name = name;
 
     let index = 0; 
 
@@ -17,27 +17,36 @@ function Art (bytes, name) {
     const isolate = (v, s, e) => (v >> s) & (1 << e - s + 1) - 1;
     const attach = (v, s, e, n) => (v & ~(((1 << (e - s + 1)) - 1) << s)) | ((n & ((1 << (e - s + 1)) - 1)) << s);
 
-    this.version = uint32();
-    this.numtiles = uint32();
-    this.localtilestart = uint32();
-    this.localtileend = uint32();
+    this.Version = uint32();
+    this.Length = uint32();
+    this.Start = uint32();
+    this.End = uint32();
 
-    this.tiles = new Array(this.localtileend - this.localtilestart + 1);
+    this.Tiles = new Array(this.End - this.Start + 1);
 
-    this.tilesizx = new Array(this.tiles.length);
-    for (let i = 0; i < this.tilesizx.length; i++) {
-        this.tilesizx[i] = uint16();
+    // TO-DO => fix this fuckery
+    for (let i = 0; i < this.Tiles.length; i++) {
+        this.Tiles[i] = {
+            pixels: null,
+            animation: null
+        };
     }
 
-    this.tilesizy = new Array(this.tiles.length);    
-    for (let i = 0; i < this.tilesizy.length; i++) {
-        this.tilesizy[i] = uint16();
-    }
+    for (let i = 0; i < this.Tiles.length; i++) {
+        this.Tiles[i].pixels = new Array(uint16());
+    }    
 
-    this.animations = new Array(this.tiles.length);    
-    for (let i = 0; i < this.animations.length; i++) {
+    for (let i = 0; i < this.Tiles.length; i++) {
+        // TO-DO => fix this fuckery
+        const sizey = uint16();
+        for (let x = 0; x < this.Tiles[i].pixels.length; x++) {
+            this.Tiles[i].pixels[x] = new Array(sizey);
+        }
+    }
+ 
+    for (let i = 0; i < this.Tiles.length; i++) {
         const animation = uint32();
-        this.animations[i] = {
+        this.Tiles[i].animation = {
             frames: isolate(animation, 0, 5) & 0x3F, // uint6
             type: isolate(animation, 6, 7), // int2
             offsetX: isolate(animation, 8, 15), // int8
@@ -47,62 +56,59 @@ function Art (bytes, name) {
         };
     }
 
-    for (let i = 0; i < this.tiles.length; i++) {
-        this.tiles[i] = [];
-        for (let x = 0; x < this.tilesizx[i] ; x++) {
-            this.tiles[i][x] = [];
-            for (let y = 0; y < this.tilesizy[i]; y++) {
-                this.tiles[i][x][y] = ubyte();
+    for (let i = 0; i < this.Tiles.length; i++) {
+        for (let x = 0; x < this.Tiles[i].pixels.length ; x++) {            
+            for (let y = 0; y < this.Tiles[i].pixels[x].length; y++) {
+                this.Tiles[i].pixels[x][y] = ubyte();
             }
         }
     }
 
     // prevent anything from being left behind
-    this.remaining = bytes.slice(index);
+    this.Remaining = bytes.slice(index);
 
     // revert back to byte array
-    this.serialize = () => {
+    this.Serialize = () => {
 
         const int16ToBytes = (i) => [i>>0,i>>8];
         const int32ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24];
-        const int64ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24,i>>32,i>>40,i>>48,i>>56];
 
         const byteArray = [];
 
-        byteArray.push(...int32ToBytes(this.version));
-        byteArray.push(...int32ToBytes(this.numtiles));
-        byteArray.push(...int32ToBytes(this.localtilestart));
-        byteArray.push(...int32ToBytes(this.localtileend));
+        byteArray.push(...int32ToBytes(this.Version));
+        byteArray.push(...int32ToBytes(this.Numtiles));
+        byteArray.push(...int32ToBytes(this.Start));
+        byteArray.push(...int32ToBytes(this.End));
         
-        for (let i = 0; i < this.tilesizx.length; i++) {
-            byteArray.push(...int16ToBytes(this.tilesizx[i]));
+        for (let i = 0; i < this.Tiles.length; i++) {
+            byteArray.push(...int16ToBytes(this.Tiles[i].pixels.length));
         }
 
-        for (let i = 0; i < this.tilesizy.length; i++) {
-            byteArray.push(...int16ToBytes(this.tilesizy[i]));
+        for (let i = 0; i < this.Tiles.length; i++) {
+            byteArray.push(...int16ToBytes(this.Tiles[i].pixels.length > 0 ? this.Tiles[i].pixels[0].length : 0));
         }        
 
-        for (let i = 0; i < this.animations.length; i++) {
+        for (let i = 0; i < this.Tiles.length; i++) {
             let animation = 0;
-            animation = attach(animation, 0, 5, this.animations[i].frames);
-            animation = attach(animation, 6, 7, this.animations[i].type);
-            animation = attach(animation, 8, 15, this.animations[i].offsetX);
-            animation = attach(animation, 16, 23, this.animations[i].offsetY);
-            animation = attach(animation, 24, 27, this.animations[i].speed);
-            animation = attach(animation, 28, 31, this.animations[i].unused);
+            animation = attach(animation, 0, 5, this.Tiles[i].animation.frames);
+            animation = attach(animation, 6, 7, this.Tiles[i].animation.type);
+            animation = attach(animation, 8, 15, this.Tiles[i].animation.offsetX);
+            animation = attach(animation, 16, 23, this.Tiles[i].animation.offsetY);
+            animation = attach(animation, 24, 27, this.Tiles[i].animation.speed);
+            animation = attach(animation, 28, 31, this.Tiles[i].animation.unused);
             byteArray.push(...int32ToBytes(animation));
         }
 
-        for (let i = 0; i < this.tiles.length; i++) {
-            for (let x = 0; x < this.tilesizx[i] ; x++) {
-                for (let y = 0; y < this.tilesizy[i]; y++) {
-                    byteArray.push(this.tiles[i][x][y]);
+        for (let i = 0; i < this.Tiles.length; i++) {
+            for (let x = 0; x < this.Tiles[i].pixels.length ; x++) {
+                for (let y = 0; y < this.Tiles[i].pixels[x].length; y++) {
+                    byteArray.push(this.Tiles[i].pixels[x][y]);
                 }
             }
         }
 
         // add remaining bytes if any
-        byteArray.push(...this.remaining);
+        byteArray.push(...this.Remaining);
 
         // convert to uint8array (not sure if necessary)
         return new Uint8Array(byteArray);

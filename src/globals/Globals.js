@@ -1,0 +1,3 @@
+Globals = {
+    GRP: null
+}

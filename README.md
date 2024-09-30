@@ -24,3 +24,5 @@ https://phcs93.github.io/duke-map-viewer/
   - first render all sectors based on floorz
   - then -> render all decorative sprites based on z
   - then -> render all items above everything
+
+- fix grp serialization -> it doesnt consider files not added to "this.Files"

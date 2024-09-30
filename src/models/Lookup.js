@@ -12,19 +12,19 @@ function Lookup (bytes) {
     const uint16 = () => int16() & 0xFFFF;
     const uint32 = () => int32() & 0xFFFFFFFF;
 
-    this.swaps = new Array(ubyte());
+    this.Swaps = new Array(ubyte());
 
-    for (let i = 0; i < this.swaps.length; i++) {        
-        this.swaps[i] = {
+    for (let i = 0; i < this.Swaps.length; i++) {        
+        this.Swaps[i] = {
             index: ubyte(),
             table: new Array(256).fill(0).map(() => ubyte())
         };
     }
 
-    this.alternates = new Array((bytes.length - index) / (256*3));
+    this.Alternates = new Array((bytes.length - index) / (256*3));
 
-    for (let i = 0; i < this.alternates.length; i++) {        
-        this.alternates[i] = new Array(256).fill(0).map(() => [
+    for (let i = 0; i < this.Alternates.length; i++) {        
+        this.Alternates[i] = new Array(256).fill(0).map(() => [
             Math.lerp(0, 255, ubyte() / 64),
             Math.lerp(0, 255, ubyte() / 64),
             Math.lerp(0, 255, ubyte() / 64)
@@ -32,26 +32,25 @@ function Lookup (bytes) {
     }
 
     // prevent anything from being left behind
-    this.remaining = bytes.slice(index);
+    this.Remaining = bytes.slice(index);
 
     // revert back to byte array
-    this.serialize = () => {
+    this.Serialize = () => {
 
         const int16ToBytes = (i) => [i>>0,i>>8];
         const int32ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24];
-        const int64ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24,i>>32,i>>40,i>>48,i>>56];
 
         const byteArray = [];        
         
-        byteArray.push(this.swaps.length);
+        byteArray.push(this.Swaps.length);
         
-        for (let i = 0; i < this.swaps.length; i++) {        
-            byteArray.push(this.swaps[i].index);
-            byteArray.push(...this.swaps[i].table);
+        for (let i = 0; i < this.Swaps.length; i++) {        
+            byteArray.push(this.Swaps[i].index);
+            byteArray.push(...this.Swaps[i].table);
         }
 
-        for (let i = 0; i < this.alternates.length; i++) {
-            const alternate = this.alternates[i];
+        for (let i = 0; i < this.Alternates.length; i++) {
+            const alternate = this.Alternates[i];
             for (const color of alternate) {
                 const r = Math.lerp(0, 64, color[0] / 255);
                 const g = Math.lerp(0, 64, color[1] / 255);
@@ -61,7 +60,7 @@ function Lookup (bytes) {
         }
 
         // add remaining bytes if any
-        byteArray.push(...this.remaining);
+        byteArray.push(...this.Remaining);
 
         // convert to uint8array (not sure if necessary)
         return new Uint8Array(byteArray);

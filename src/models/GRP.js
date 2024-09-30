@@ -12,43 +12,96 @@ function GRP (bytes) {
     const uint16 = () => int16() & 0xFFFF;
     const uint32 = () => int32() & 0xFFFFFFFF;
 
-    this.signature = new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("");
+    this.Signature = new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("");
 
-    this.files = new Array(uint32());
+    this.Files = new Array(uint32());
 
-    for (let i = 0; i < this.files.length; i++) {
-        this.files[i] = {
-            i, // temp
+    for (let i = 0; i < this.Files.length; i++) {
+        this.Files[i] = {
             name: new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("").replace(/\x00/g, ""),
             size: uint32(),
             bytes: []
-        }        
+        }
     }
 
-    for (let i = 0; i < this.files.length; i++) {
-        this.files[i].bytes = bytes.slice(index, index + this.files[i].size);
+    this.Palette = null;
+    this.Lookup = null;
+    this.Arts = [];
+    this.Maps = [];
+
+    for (let i = 0; i < this.Files.length; i++) {
+        this.Files[i].bytes = bytes.slice(index, index + this.Files[i].size);
+        index += this.Files[i].size;
+        switch (true) {
+            case this.Files[i].name === "PALETTE.DAT": this.Palette = new Palette(this.Files[i].bytes); break;
+            case this.Files[i].name === "LOOKUP.DAT": this.Lookup = new Lookup(this.Files[i].bytes); break;
+            case this.Files[i].name.endsWith(".ART"): this.Arts.push(new Art(this.Files[i].bytes, this.Files[i].name)); break;
+            case this.Files[i].name.endsWith(".MAP"): this.Maps.push(new Map(this.Files[i].bytes, this.Files[i].name)); break;
+        }
     }
 
-    // read only the bytes from the desired file
-    this.getFileBytes = (name) => {
+    this.Arts = this.Arts.sort((a, b) => a.Start - b.Start);
 
-        const filtered = this.files.filter(f => f.name.toUpperCase() === name.toUpperCase());
+    this.Tiles = this.Arts.reduce((tiles, art) => { 
+        for (let i = 0; i < art.Tiles.length; i++) {
+            tiles[art.Start + i] = art.Tiles[i];
+        }
+        return tiles; 
+    }, []);
 
-        if (filtered.length === 1) {
+    this.Remaining = bytes.slice(index);
 
-            const file = filtered[0];
+    this.Serialize = () => {
 
-            const bytesToSkipStartingFromIndex = this.files.filter(f => f.i < file.i).reduce((acc, crr) => {
-                acc += crr.size;
-                return acc;
-            }, 0);
+        const int16ToBytes = (i) => [i>>0,i>>8];
+        const int32ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24];
 
-            return bytes.slice(index + bytesToSkipStartingFromIndex, index + bytesToSkipStartingFromIndex + file.size);
+        const byteArray = [];
 
-        } else {
-            return null;
+        byteArray.push(...this.Signature.split("").map(c => c.charCodeAt(0)));
+
+        byteArray.push(...int32ToBytes(this.Files.length));
+
+        for (let i = 0; i < this.Files.length; i++) {            ;
+            byteArray.push(...this.Files[i].name.split("").reduce((a, c, p) => { a[p] = c.charCodeAt(0); return a; }, new Array(12).fill(0)));
+            byteArray.push(...int32ToBytes(this.Files[i].size));
         }
 
+        for (let i = 0; i < this.Files.length; i++) { 
+            switch (true) {
+                case this.Files[i].name.toUpperCase() === "PALETTE.DAT": byteArray.push(...this.Palette.Serialize()); break;
+                case this.Files[i].name.toUpperCase() === "LOOKUP.DAT": byteArray.push(...this.Lookup.Serialize()); break;
+                case this.Files[i].name.toUpperCase().endsWith(".ART"): {
+                    const artBytes = this.Arts.filter(art => art.Name.toUpperCase() === this.Files[i].name.toUpperCase())[0].Serialize();
+                    for (const b of artBytes) byteArray.push(b);
+                    break;
+                }
+                case this.Files[i].name.toUpperCase().endsWith(".MAP"): {
+                    const mapBytes = this.Maps.filter(map => map.Name.toUpperCase() === this.Files[i].name.toUpperCase())[0].Serialize(); 
+                    for (const b of mapBytes) byteArray.push(b);
+                    break;
+                }
+                default: {
+                    const fileBytes = this.Files[i].bytes; 
+                    for (const b of fileBytes) byteArray.push(b);
+                    break;
+                }
+            }
+        }
+
+        // add remaining bytes if any
+        byteArray.push(...this.Remaining);
+
+        // convert to uint8array (not sure if necessary)
+        return new Uint8Array(byteArray);
+
+    };
+
+    this.GetColors = (shade, swap, alternate) => {
+        const swaps = this.Lookup.Swaps.reduce((d, s) => { d[s.index] = s; return d; }, {});
+        let colors = alternate !== null ? this.Lookup.Alternates[alternate] : this.Palette.Colors;
+        if (swap != null) colors = colors.map((c, i) => colors[swaps[swap].table[i]]);
+        return colors.map((c, i) => colors[this.Palette.Shades[shade][i]]);
     }
 
 }
