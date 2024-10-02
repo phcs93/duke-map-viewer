@@ -9,9 +9,9 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <script src="lib/pako.js"></script>   
+        <script src="lib/pako.js"></script>
 
-        <script src="lib/svg-mouse/svg-mouse.js"></script>   
+        <script src="lib/svg-mouse/svg-mouse.js"></script>
         <link rel="stylesheet" href="lib/svg-mouse/svg-mouse.css">
 
         <script type="application/javascript" src="src/enums/EffectorTag.js"></script>
@@ -50,23 +50,200 @@
                     <thead>
                         <tr>
                             <th style="width: 32px !important; min-width: 32px !important;"></th>
-                            <th style="width: 200px !important; min-width: 200px !important;">NAME<input type="text" id="name-filter" class="filter" placeholder="filter by name"></th>
-                            <th>SPAWNS<input type="number" id="spawns-filter" class="filter" placeholder="at least"></th>
-                            <th>COOP</th>
-                            <th>WIDTH</th>
-                            <th>HEIGHT</th>
-                            <th>DEPTH</th>
-                            <th>PISTOL</th>
-                            <th>SHOTGUN</th>
-                            <th>CHAINGUN</th>
-                            <th>RPG</th>
-                            <th>PIPEBOMB</th>
-                            <th>SHRINKER</th>
-                            <th>EXPANDER</th>
-                            <th>DEVASTATOR</th>
-                            <th>FREEZER</th>
-                            <th>TRIPBOMB</th>
-                            <th style="width: 256px !important; min-width: 256px !important;">LAVA/ACID/PLASMA/RAIL</th>
+                            <th style="width: 200px !important; min-width: 200px !important;">
+                                NAME
+                                <input type="text" id="name-filter" class="filter" placeholder="filter by name">
+                            </th>
+                            <th>
+                                SPAWNS
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-spawns-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-spawns-filter" class="filter" placeholder="max">
+                                </div>                                
+                            </th>
+                            <th>
+                                COOP
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-coop-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-coop-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                WIDTH
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-width-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-width-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                HEIGHT
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-height-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-height-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                DEPTH
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-depth-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-depth-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                PISTOL
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-pistol-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-pistol-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                SHOTGUN
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-shotgun-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-shotgun-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                CHAINGUN
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-chaingun-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-chaingun-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                RPG
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-rpg-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-rpg-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                PIPEBOMB
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-pipebomb-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-pipebomb-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                SHRINKER
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-shrinker-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-shrinker-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                EXPANDER
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-expander-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-expander-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                DEVASTATOR
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-devastator-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-devastator-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                FREEZER
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-freezer-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-freezer-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                TRIPBOMB
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-tripbomb-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-tripbomb-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                MEDKIT
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-medkit-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-medkit-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                ARMOR
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-armor-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-armor-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                STEROIDS
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-steroids-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-steroids-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                SCUBA
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-scuba-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-scuba-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                JETPACK
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-jetpack-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-jetpack-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                NIGHTVISION
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-nightvision-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-nightvision-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                BOOTS
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-boots-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-boots-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                HOLODUKE
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-holoduke-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-holoduke-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                SMALL HEALTH
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-small-health-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-small-health-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                MEDIUM HEALTH
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-medium-health-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-medium-health-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th>
+                                ATOMIC HEALTH
+                                <div class="flex-columns padding-x-8">
+                                    <input type="number" id="min-atomic-health-filter" class="filter" placeholder="min">
+                                    <input type="number" id="max-atomic-health-filter" class="filter" placeholder="max">
+                                </div>
+                            </th>
+                            <th style="width: 256px !important; min-width: 256px !important;">
+                                LAVA/ACID/PLASMA/RAIL
+                                <select id="damaging-filter" class="filter">
+                                    <option value="">---</option>
+                                    <option value="YES">YES</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,11 +258,9 @@
 
             <div id="map-details-page" class="flex-columns page grow" data-visible="false">
 
-                
-
                 <div id="map-details" class="flex-rows padding-16">
 
-                    <a href="?">&lt;&lt;&lt; BACK TO FILTER</a>
+                    <a href="" onclick="backToFilter(event)">&lt;&lt;&lt; BACK TO FILTER</a>
 
                     <br>
                     <hr>
@@ -93,9 +268,151 @@
 
                     <label>MAP</label>
                     <select id="map-select"></select>
+                    <br>
+                    <a href="" class="download-link" download>DOWNLOAD</a>
+
+                    <br>
+                    <label class="divider">DETAILS</label>
+                    <br>
+
+                    <label class="detail" data-field="spawns">SPAWNS</label>
+                    <label class="detail" data-field="coop">COOP SPAWNS</label>
+                    <label class="detail" data-field="width">WIDTH</label>
+                    <label class="detail" data-field="height">HEIGHT</label>
+                    <label class="detail" data-field="depth">DEPTH</label>
+                    <label class="detail" data-field="damaging-floor">HAS LAVA/ACID/PLASMA/RAIL</label>
+
+                    <br>
+                    <label class="divider">WEAPONS</label>
+                    <br>
+
+                    <label class="detail" data-field="pistol">PISTOL</label>
+                    <label class="detail" data-field="shotgun">SHOTGUN</label>
+                    <label class="detail" data-field="chaingun">CHAINGUN</label>
+                    <label class="detail" data-field="rpg">RPG</label>
+                    <label class="detail" data-field="pipebomb">PIPEBOMB</label>
+                    <label class="detail" data-field="shrinker">SHRINKER</label>
+                    <label class="detail" data-field="devastator">DEVASTATOR</label>
+                    <label class="detail" data-field="freezer">FREEZER</label>
+                    <label class="detail" data-field="tripbomb">TRIPBOMB</label>
+
+                    <br>
+                    <label class="divider">AMMO</label>
+                    <br>
+
+                    <label class="detail" data-field="pistol-ammo">PISTOL</label>
+                    <label class="detail" data-field="shotgun-ammo">SHOTGUN</label>
+                    <label class="detail" data-field="chaingun-ammo">CHAINGUN</label>
+                    <label class="detail" data-field="rpg-ammo">RPG</label>
+                    <label class="detail" data-field="pipebomb-ammo">PIPEBOMB</label>
+                    <label class="detail" data-field="shrinker-ammo">SHRINKER</label>
+                    <label class="detail" data-field="expander-ammo">EXPANDER</label>
+                    <label class="detail" data-field="devastator-ammo">DEVASTATOR</label>
+                    <label class="detail" data-field="freezer-ammo">FREEZER</label>
+
+                    <br>
+                    <label class="divider">INVENTORY</label>
+                    <br>
+
+                    <label class="detail" data-field="medkit">MEDKIT</label>
+                    <label class="detail" data-field="armor">ARMOR</label>
+                    <label class="detail" data-field="steroids">STEROIDS</label>
+                    <label class="detail" data-field="scuba">SCUBA</label>
+                    <label class="detail" data-field="jetpack">JETPACK</label>
+                    <label class="detail" data-field="nightvision">NIGHTVISION</label>
+                    <label class="detail" data-field="boots">BOOTS</label>
+                    <label class="detail" data-field="holoduke">HOLODUKE</label>
+
+                    <br>
+                    <label class="divider">HEALTH CONTAINERS</label>
+                    <br>
+
+                    <label class="detail" data-field="small-health">SMALL</label>
+                    <label class="detail" data-field="medium-health">MEDIUM</label>
+                    <label class="detail" data-field="atomic-health">ATOMIC</label>
+
+                    <br>
+                    <label class="divider">SECTOR EFFECTORS</label>
+                    <br>
+
+                    <label class="detail" data-field="SEPivot">[1] Pivot</label>
+                    <label class="detail" data-field="SEEarthquake">[2] Earthquake</label>
+                    <label class="detail" data-field="SERandomLightsAfterShotOut">[3] RandomLightsAfterShotOut</label>
+                    <label class="detail" data-field="SERandomLights">[4] RandomLights</label>
+                    <label class="detail" data-field="SEHomingTurret">[5] HomingTurret</label>
+                    <label class="detail" data-field="SESubwayEngine">[6] SubwayEngine</label>
+                    <label class="detail" data-field="SETeleporter">[7] Teleporter</label>
+                    <label class="detail" data-field="SEOpenDoorRoomLights">[8] OpenDoorRoomLights</label>
+                    <label class="detail" data-field="SECloseDoorRoomLights">[9] CloseDoorRoomLights</label>
+                    <label class="detail" data-field="SEDoorAutoClose">[10] DoorAutoClose</label>
+                    <label class="detail" data-field="SESwingingDoorHinge">[11] SwingingDoorHinge</label>
+                    <label class="detail" data-field="SELightSwitch">[12] LightSwitch</label>
+                    <label class="detail" data-field="SEExplosive">[13] Explosive</label>
+                    <label class="detail" data-field="SESubwayCar">[14] SubwayCar</label>
+                    <label class="detail" data-field="SESlidingDoor">[15] SlidingDoor</label>
+                    <label class="detail" data-field="SERotateReactorSector">[16] RotateReactorSector</label>
+                    <label class="detail" data-field="SETransportElevator">[17] TransportElevator</label>
+                    <label class="detail" data-field="SEIncrementalSectorRaiseFall">[18] IncrementalSectorRaiseFall</label>
+                    <label class="detail" data-field="SECeilingFallsFromExplosion">[19] CeilingFallsFromExplosion</label>
+                    <label class="detail" data-field="SEStretchingShrinkingSector">[20] StretchingShrinkingSector</label>
+                    <label class="detail" data-field="SEFloorRiseCeilingDrop">[21] FloorRiseCeilingDrop</label>
+                    <label class="detail" data-field="SETeethDoor">[22] TeethDoor</label>
+                    <label class="detail" data-field="SEOneWayTeleporterExit">[23] OneWayTeleporterExit</label>
+                    <label class="detail" data-field="SEConveyorBelt">[24] ConveyorBelt</label>
+                    <label class="detail" data-field="SEPiston">[25] Piston</label>
+                    <label class="detail" data-field="SEEscalator">[26] Escalator</label>
+                    <label class="detail" data-field="SEDemoCamera">[27] DemoCamera</label>
+                    <label class="detail" data-field="SELightningBolt">[28] LightningBolt</label>
+                    <label class="detail" data-field="SEFloatingSector">[29] FloatingSector</label>
+                    <label class="detail" data-field="SETwoWayTrain">[30] TwoWayTrain</label>
+                    <label class="detail" data-field="SERaiseLowerFloor">[31] RaiseLowerFloor</label>
+                    <label class="detail" data-field="SERaiseLowerCeiling">[32] RaiseLowerCeiling</label>
+                    <label class="detail" data-field="SEEarthquakeDebris">[33] EarthquakeDebris</label>
+                    <label class="detail" data-field="SEAlternativeConveyorBelt">[34] AlternativeConveyorBelt</label>
+                    <label class="detail" data-field="SEDrill">[35] Drill</label>
+                    <label class="detail" data-field="SEAutomaticShooter">[36] AutomaticShooter</label>
+                    <label class="detail" data-field="SEFloorOverFloor0">[40] FloorOverFloor0</label>
+                    <label class="detail" data-field="SEFloorOverFloor1">[41] FloorOverFloor1</label>
+                    <label class="detail" data-field="SEFloorOverFloor2">[42] FloorOverFloor2</label>
+                    <label class="detail" data-field="SEFloorOverFloor3">[43] FloorOverFloor3</label>
+                    <label class="detail" data-field="SEFloorOverFloor4">[44] FloorOverFloor4</label>
+                    <label class="detail" data-field="SEFloorOverFloor5">[45] FloorOverFloor5</label>
+                    <label class="detail" data-field="SEAdjustWall">[128] AdjustWall</label>
+                    <label class="detail" data-field="SEFireworks1">[130] Fireworks1</label>
+                    <label class="detail" data-field="SEFireworks2">[131] Fireworks2</label>
+
+                    <br>
+                    <label class="divider">SECTOR LO-TAGS</label>
+                    <br>
+
+                    <label class="detail" data-field="LOTAGAboveWaterSector">[1] AboveWaterSector</label>
+                    <label class="detail" data-field="LOTAGBelowWaterSector">[2] BelowWaterSector</label>
+                    <label class="detail" data-field="LOTAGBoss2RoamSector">[3] Boss2RoamSector</label>
+                    <label class="detail" data-field="LOTAGStarTrekDoor">[9] StarTrekDoor</label>
+                    <label class="detail" data-field="LOTAGTransportElevator">[15] TransportElevator</label>
+                    <label class="detail" data-field="LOTAGElevatorPlatformDown">[16] ElevatorPlatformDown</label>
+                    <label class="detail" data-field="LOTAGElevatorPlatformUp">[17] ElevatorPlatformUp</label>
+                    <label class="detail" data-field="LOTAGElevatorDown">[18] ElevatorDown</label>
+                    <label class="detail" data-field="LOTAGElevatorUp">[19] ElevatorUp</label>
+                    <label class="detail" data-field="LOTAGCeilingDoor">[20] CeilingDoor</label>
+                    <label class="detail" data-field="LOTAGFloorDoor">[21] FloorDoor</label>
+                    <label class="detail" data-field="LOTAGSplitDoor">[22] SplitDoor</label>
+                    <label class="detail" data-field="LOTAGSwingingDoor">[23] SwingingDoor</label>
+                    <label class="detail" data-field="LOTAGReserved">[24] Reserved</label>
+                    <label class="detail" data-field="LOTAGSlidingDoor">[25] SlidingDoor</label>
+                    <label class="detail" data-field="LOTAGSplitStarTrekDoor">[26] SplitStarTrekDoor</label>
+                    <label class="detail" data-field="LOTAGStretchingShrinkingSector">[27] StretchingShrinkingSector</label>
+                    <label class="detail" data-field="LOTAGFloorRiseCeilingDrop">[28] FloorRiseCeilingDrop</label>
+                    <label class="detail" data-field="LOTAGTeethDoor">[29] TeethDoor</label>
+                    <label class="detail" data-field="LOTAGRotateRiseSector">[30] RotateRiseSector</label>
+                    <label class="detail" data-field="LOTAGTwoWayTrain">[31] TwoWayTrain</label>
+                    <label class="detail" data-field="LOTAGOneTimeSound">[10000] OneTimeSound</label>
+                    <label class="detail" data-field="LOTAGSecretPlace">[32767] SecretPlace</label>
+                    <label class="detail" data-field="LOTAGEndOfLevelWithMessage">[65534] EndOfLevelWithMessage</label>
+                    <label class="detail" data-field="LOTAGEndOfLevel">[65535] EndOfLevel</label>
 
                 </div>
-                    
+
                 <div id="map-preview" class="grow">
                     <svg id="map-svg" class="mouse"></svg>
                 </div>

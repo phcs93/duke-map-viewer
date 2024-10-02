@@ -7,9 +7,9 @@ require("./src/enums/SectorTag.js");
 
 const json = [];
 
-for (const file of fs.readdirSync("./res/maps")) {
+for (const file of fs.readdirSync("./bin/maps")) {
 
-    const map = new Map(fs.readFileSync(`./res/maps/${file}`));
+    const map = new Map(fs.readFileSync(`./bin/maps/${file}`));
 
     json.push({
         name: file.toLowerCase().replace(".map", ""),

@@ -20,8 +20,11 @@ div.page {
 }
 
 .filter {
-    margin: 8px 8px 0px 8px;
+    margin: 0px;
+    margin-top: 8px;
 }
+
+
 
 label {
     font-family: "Candara";
@@ -30,6 +33,34 @@ label {
     height: 32px;
     line-height: 32px;
     color: lightgray;    
+    &.detail {
+        height: 16px;
+        line-height: 16px;
+        &::after {
+            content: attr(data-value);
+            float: right;
+            font-family: "Segoe UI";
+            font-weight: normal;
+        }
+    }
+}
+
+label.divider {
+    text-align: center !important;
+    color: #3E3E3E;
+    text-shadow: none;
+    display: flex !important;
+    align-items: center;
+    line-height: 20px;
+    &::before, &::after {
+        border-top: 1px solid #2E2E2E;
+        content: "";
+        flex-grow: 1;
+        font-size: 0px;
+        line-height: 0px;
+    }
+    &::before { margin-right: 8px; }
+    &::after { margin-left: 8px; }
 }
 
 hr {
@@ -43,6 +74,7 @@ select, input {
     font-family: "Segoe UI";
     font-size: 16px;
     height: 32px;
+    min-height: 32px;
     padding-left: 8px;
     padding-right: 8px;
     color: lightgray;
@@ -50,6 +82,26 @@ select, input {
     border-radius: 5px;
     border: 1px solid #2B2B2B;
     width: calc(100% - 16px);
+}
+
+a.download-link {
+    font-family: "Candara";
+    font-size: 14px;
+    font-weight: bold;
+    height: 32px;
+    min-height: 32px;
+    padding-left: 8px;
+    padding-right: 8px;
+    color: white;
+    background-color: #090909;
+    border-radius: 5px;
+    border: 1px solid #2B2B2B;
+    text-align: center;
+    line-height: 32px;
+}
+
+button:hover {
+    cursor: pointer;
 }
 
 div.horizontal-scroll {
@@ -70,10 +122,9 @@ table {
             border-radius: 5px;     
             background-color: #101010;
             & th {                
-                border: right;
                 padding: 8px 0;
-                width: 128px;
-                min-width: 128px;
+                width: 140px;
+                min-width: 140px;
             }
         }
     }
@@ -82,6 +133,9 @@ table {
             border-radius: 5px;
             &:hover {
                 background-color: #2E2E2E;
+            }
+            & td {
+                padding-right: 10px;
             }
         }
     }

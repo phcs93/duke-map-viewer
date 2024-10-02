@@ -6,6 +6,9 @@ https://phcs93.github.io/duke-map-viewer/
 
 # TO-DO
 
+- map filtering
+  - consider netduke32 ctf/tdm maps -> check how its done
+
 - floor
   - render tile alignment (based on sector first wall or not)
   - render tile panning
