@@ -23,18 +23,18 @@ function Map (bytes, name) {
             floorstat: reader.int16(),
             ceilingpicnum: reader.int16(),
             ceilingheinum: reader.int16(),
-            ceilingshade: reader.byte(),
-            ceilingpal: reader.ubyte(),
-            ceilingxpanning: reader.ubyte(),
-            ceilingypanning: reader.ubyte(),
+            ceilingshade: reader.int8(),
+            ceilingpal: reader.uint8(),
+            ceilingxpanning: reader.uint8(),
+            ceilingypanning: reader.uint8(),
             floorpicnum: reader.int16(),
             floorheinum: reader.int16(),
-            floorshade: reader.byte(),
-            floorpal: reader.ubyte(),
-            floorxpanning: reader.ubyte(),
-            floorypanning: reader.ubyte(),
-            visibility: reader.ubyte(),
-            filler: reader.ubyte(),
+            floorshade: reader.int8(),
+            floorpal: reader.uint8(),
+            floorxpanning: reader.uint8(),
+            floorypanning: reader.uint8(),
+            visibility: reader.uint8(),
+            filler: reader.uint8(),
             lotag: reader.int16(),
             hitag: reader.int16(),
             extra: reader.int16()
@@ -53,12 +53,12 @@ function Map (bytes, name) {
             cstat: reader.int16(),
             picnum: reader.int16(),
             overpicnum: reader.int16(),
-            shade: reader.byte(),
-            pal: reader.ubyte(),
-            xrepeat: reader.ubyte(),
-            yrepeat: reader.ubyte(),
-            xpanning: reader.ubyte(),
-            ypanning: reader.ubyte(),
+            shade: reader.int8(),
+            pal: reader.uint8(),
+            xrepeat: reader.uint8(),
+            yrepeat: reader.uint8(),
+            xpanning: reader.uint8(),
+            ypanning: reader.uint8(),
             lotag: reader.int16(),
             hitag: reader.int16(),
             extra: reader.int16()
@@ -74,14 +74,14 @@ function Map (bytes, name) {
             z: reader.int32(),
             cstat: reader.int16(),
             picnum: reader.int16(),
-            shade: reader.byte(),
-            pal: reader.ubyte(),
-            clipdist: reader.ubyte(),
-            filler: reader.ubyte(),
-            xrepeat: reader.ubyte(),
-            yrepeat: reader.ubyte(),
-            xoffset: reader.byte(),
-            yoffset: reader.byte(),
+            shade: reader.int8(),
+            pal: reader.uint8(),
+            clipdist: reader.uint8(),
+            filler: reader.uint8(),
+            xrepeat: reader.uint8(),
+            yrepeat: reader.uint8(),
+            xoffset: reader.int8(),
+            yoffset: reader.int8(),
             sectnum: reader.int16(),
             statnum: reader.int16(),
             ang: reader.int16(),
@@ -117,18 +117,18 @@ function Map (bytes, name) {
             writer.int16(this.Sectors[i].floorstat);
             writer.int16(this.Sectors[i].ceilingpicnum);
             writer.int16(this.Sectors[i].ceilingheinum);
-            writer.byte(this.Sectors[i].ceilingshade);
-            writer.byte(this.Sectors[i].ceilingpal);
-            writer.byte(this.Sectors[i].ceilingxpanning);
-            writer.byte(this.Sectors[i].ceilingypanning);
+            writer.int8(this.Sectors[i].ceilingshade);
+            writer.int8(this.Sectors[i].ceilingpal);
+            writer.int8(this.Sectors[i].ceilingxpanning);
+            writer.int8(this.Sectors[i].ceilingypanning);
             writer.int16(this.Sectors[i].floorpicnum);
             writer.int16(this.Sectors[i].floorheinum);
-            writer.byte(this.Sectors[i].floorshade);
-            writer.byte(this.Sectors[i].floorpal);
-            writer.byte(this.Sectors[i].floorxpanning);
-            writer.byte(this.Sectors[i].floorypanning);
-            writer.byte(this.Sectors[i].visibility);
-            writer.byte(this.Sectors[i].filler);
+            writer.int8(this.Sectors[i].floorshade);
+            writer.int8(this.Sectors[i].floorpal);
+            writer.int8(this.Sectors[i].floorxpanning);
+            writer.int8(this.Sectors[i].floorypanning);
+            writer.int8(this.Sectors[i].visibility);
+            writer.int8(this.Sectors[i].filler);
             writer.int16(this.Sectors[i].lotag);
             writer.int16(this.Sectors[i].hitag);
             writer.int16(this.Sectors[i].extra);
@@ -145,12 +145,12 @@ function Map (bytes, name) {
             writer.int16(this.Walls[i].cstat);
             writer.int16(this.Walls[i].picnum);
             writer.int16(this.Walls[i].overpicnum);
-            writer.byte(this.Walls[i].shade);
-            writer.byte(this.Walls[i].pal);
-            writer.byte(this.Walls[i].xrepeat);
-            writer.byte(this.Walls[i].yrepeat);
-            writer.byte(this.Walls[i].xpanning);
-            writer.byte(this.Walls[i].ypanning);
+            writer.int8(this.Walls[i].shade);
+            writer.int8(this.Walls[i].pal);
+            writer.int8(this.Walls[i].xrepeat);
+            writer.int8(this.Walls[i].yrepeat);
+            writer.int8(this.Walls[i].xpanning);
+            writer.int8(this.Walls[i].ypanning);
             writer.int16(this.Walls[i].lotag);
             writer.int16(this.Walls[i].hitag);
             writer.int16(this.Walls[i].extra);
@@ -164,14 +164,14 @@ function Map (bytes, name) {
             writer.int32(this.Sprites[i].z);
             writer.int16(this.Sprites[i].cstat);
             writer.int16(this.Sprites[i].picnum);
-            writer.byte(this.Sprites[i].shade);
-            writer.byte(this.Sprites[i].pal);
-            writer.byte(this.Sprites[i].clipdist);
-            writer.byte(this.Sprites[i].filler);
-            writer.byte(this.Sprites[i].xrepeat);
-            writer.byte(this.Sprites[i].yrepeat);
-            writer.byte(this.Sprites[i].xoffset);
-            writer.byte(this.Sprites[i].yoffset);
+            writer.int8(this.Sprites[i].shade);
+            writer.int8(this.Sprites[i].pal);
+            writer.int8(this.Sprites[i].clipdist);
+            writer.int8(this.Sprites[i].filler);
+            writer.int8(this.Sprites[i].xrepeat);
+            writer.int8(this.Sprites[i].yrepeat);
+            writer.int8(this.Sprites[i].xoffset);
+            writer.int8(this.Sprites[i].yoffset);
             writer.int16(this.Sprites[i].sectnum);
             writer.int16(this.Sprites[i].statnum);
             writer.int16(this.Sprites[i].ang);
@@ -184,7 +184,7 @@ function Map (bytes, name) {
             writer.int16(this.Sprites[i].extra);
         }
 
-        return new Uint8Array(writer.bytes);
+        return writer.bytes;
 
     }
 

@@ -2,7 +2,7 @@ function ByteWriter (bytes) {
 
     this.bytes = bytes || [];
 
-    this.byte = (v) => this.bytes.push(v);
+    this.int8 = (v) => this.bytes.push(v);
     this.int16 = (v) => this.bytes.push(...[v>>0,v>>8]);
     this.int32 = (v) => this.bytes.push(...[v>>0,v>>8,v>>16,v>>24]);
 

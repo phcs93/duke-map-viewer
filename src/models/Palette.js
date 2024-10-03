@@ -1,71 +1,58 @@
 function Palette (bytes) {
 
-    let index = 0; 
-
-    const b = (n) => bytes[index++] << n;
-    
-    const byte = () => (b(0) << 24) >> 24;
-    const int16 = () => b(0)|b(8);
-    const int32 = () => b(0)|b(8)|b(16)|b(24);
-
-    const ubyte = () => byte() & 0xFF;
-    const uint16 = () => int16() & 0xFFFF;
-    const uint32 = () => int32() & 0xFFFFFFFF;
+    const reader = new ByteReader(bytes);
 
     this.Colors = new Array(256);
 
     for (let i = 0; i < this.Colors.length; i++) {
         // scale from 0...64 to 0...256 (DOS was limited)
-        const r = Math.lerp(0, 255, ubyte() / 64);
-        const g = Math.lerp(0, 255, ubyte() / 64);
-        const b = Math.lerp(0, 255, ubyte() / 64);
+        const r = Math.lerp(0, 255, reader.uint8() / 64);
+        const g = Math.lerp(0, 255, reader.uint8() / 64);
+        const b = Math.lerp(0, 255, reader.uint8() / 64);
         this.Colors[i] = [r, g, b];
     }
 
-    this.Shades = new Array(uint16());
+    this.Shades = new Array(reader.uint16());
 
     for (let i = 0; i < this.Shades.length; i++) {
-        this.Shades[i] = new Array(256).fill(0).map(() => ubyte());
+        this.Shades[i] = new Array(256).fill(0).map(() => reader.uint8());
     }
 
-    // this.Transparency = new Array(256).fill(new Array(256));
+    this.Transparency = new Array(256);
 
-    // for (let x = 0; x < this.Transparency.length; x++) {
-    //     for (let y = 0; y < this.Transparency[x].length; y++) {
-    //         this.Transparency[x][y] = byte();
-    //     }
-    // }
+    for (let x = 0; x < this.Transparency.length; x++) {
+        this.Transparency[x] = new Array(256);
+        for (let y = 0; y < this.Transparency[x].length; y++) {
+            this.Transparency[x][y] = reader.uint8();
+        }
+    }
 
-    // prevent anything from being left behind
-    this.Remaining = bytes.slice(index);
-
-    // revert back to byte array
+    this.Remaining = reader.bytes.slice(reader.index);
+    
     this.Serialize = () => {
 
-        const int16ToBytes = (i) => [i>>0,i>>8];
-        const int32ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24];
-
-        const byteArray = [];
+        const writer = new ByteWriter();
         
         for (let i = 0; i < this.Colors.length; i++) {
             const color = this.Colors[i];
-            const r = Math.lerp(0, 64, color[0] / 255);
-            const g = Math.lerp(0, 64, color[1] / 255);
-            const b = Math.lerp(0, 64, color[2] / 255);
-            byteArray.push(...[r,g,b]);
+            writer.int8(Math.lerp(0, 64, color[0] / 255));
+            writer.int8(Math.lerp(0, 64, color[1] / 255));
+            writer.int8(Math.lerp(0, 64, color[2] / 255));
         }
        
-        byteArray.push(...int16ToBytes(this.Shades.length));
+        writer.int16(this.Shades.length)
        
         for (let i = 0; i < this.Shades.length; i++) {
-            byteArray.push(...this.Shades[i]);
+            for (const shade of this.Shades[i]) {
+                for (const index of shade) {
+                    writer.int8(index);
+                }
+            }
         }
 
-        // add remaining bytes if any
-        byteArray.push(...this.Remaining);
+        writer.bytes.push(...this.Remaining);
 
-        // convert to uint8array (not sure if necessary)
-        return new Uint8Array(byteArray);
+        return writer.bytes;
 
     };
 

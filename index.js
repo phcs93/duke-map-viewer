@@ -383,7 +383,9 @@ function renderMapSVG(map) {
         //elements.push(line);
     }
 
-    // TO-DO => make it render items after everything else
+    const floorSprites = [];
+    const itemSprites = [];
+
     for (const sprite of map.Sprites) {
 
         const itemPicnums = [
@@ -408,7 +410,7 @@ function renderMapSVG(map) {
             const colors = Globals.GRP.GetColors(0, null, null);
             const dataURL = tileToDataURL(tile, colors, alpha);
             const image = `<image id="sprite-${sprite.picnum}-image" width="${w}" height="${h}" x="${x}" y="${y}" href="${dataURL}" transform="rotate(${a} ${sprite.x} ${sprite.y})" />`;
-            elements.push(image);
+            floorSprites.push(image);
 
             // const rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" stroke="purple" stroke-width="${strokeWidth}" fill="transparent" stroke-dasharray="20,20" />`;
             // const line1 = `<line x1="${x}" y1="${y}" x2="${x + w}" y2="${y + h}" stroke="purple" stroke-width="${strokeWidth}" stroke-dasharray="20,20" />`;
@@ -449,11 +451,15 @@ function renderMapSVG(map) {
                 const colors = Globals.GRP.GetColors(0, swap, null);
                 const dataURL = tileToDataURL(tile, colors);
                 const image = `<image id="sprite-${sprite.picnum}-image" width="${w}" height="${h}" x="${x}" y="${y}" href="${dataURL}" />`;
-                elements.push(image);
+                itemSprites.push(image);
             }
+
         }
 
     }
+
+    elements.push(...floorSprites);
+    elements.push(...itemSprites);
 
     svg.insertAdjacentHTML("beforeend", elements.join(""));
 
