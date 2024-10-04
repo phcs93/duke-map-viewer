@@ -1,76 +1,56 @@
 function Lookup (bytes) {
 
-    let index = 0; 
+    const reader = new ByteReader(bytes);
 
-    const b = (n) => bytes[index++] << n;
-    
-    const byte = () => (b(0) << 24) >> 24;
-    const int16 = () => b(0)|b(8);
-    const int32 = () => b(0)|b(8)|b(16)|b(24);
-
-    const ubyte = () => byte() & 0xFF;
-    const uint16 = () => int16() & 0xFFFF;
-    const uint32 = () => int32() & 0xFFFFFFFF;
-
-    this.Swaps = new Array(ubyte());
+    this.Swaps = new Array(reader.uint8());
 
     for (let i = 0; i < this.Swaps.length; i++) {        
         this.Swaps[i] = {
-            index: ubyte(),
-            table: new Array(256).fill(0).map(() => ubyte())
+            index: reader.uint8(),
+            table: new Array(256).fill(0).map(() => reader.uint8())
         };
     }
 
-    this.Alternates = new Array((bytes.length - index) / (256*3));
+    this.Alternates = new Array((reader.bytes.length - reader.index) / (256*3));
 
     for (let i = 0; i < this.Alternates.length; i++) {        
         this.Alternates[i] = new Array(256).fill(0).map(() => [
-            Math.lerp(0, 255, ubyte() / 64),
-            Math.lerp(0, 255, ubyte() / 64),
-            Math.lerp(0, 255, ubyte() / 64)
+            (reader.uint8() * 255) / 63,
+            (reader.uint8() * 255) / 63,
+            (reader.uint8() * 255) / 63
         ]);   
     }
 
-    // prevent anything from being left behind
-    this.Remaining = bytes.slice(index);
+    this.Remaining = reader.bytes.slice(reader.index);
 
-    // revert back to byte array
     this.Serialize = () => {
 
-        const int16ToBytes = (i) => [i>>0,i>>8];
-        const int32ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24];
+        const writer = new ByteWriter();
 
-        const byteArray = [];        
-        
-        byteArray.push(this.Swaps.length);
+        writer.int8(this.Swaps.length);
         
         for (let i = 0; i < this.Swaps.length; i++) {        
-            byteArray.push(this.Swaps[i].index);
-            byteArray.push(...this.Swaps[i].table);
+            writer.int8(this.Swaps[i].index);
+            for (const index of this.Swaps[i].table) {
+                writer.int8(index);
+            }
         }
 
         for (let i = 0; i < this.Alternates.length; i++) {
             const alternate = this.Alternates[i];
             for (const color of alternate) {
-                const r = Math.lerp(0, 64, color[0] / 255);
-                const g = Math.lerp(0, 64, color[1] / 255);
-                const b = Math.lerp(0, 64, color[2] / 255);
-                byteArray.push(...[r,g,b]);
+                writer.int8((color[0] * 63) / 255);
+                writer.int8((color[1] * 63) / 255);
+                writer.int8((color[2] * 63) / 255);
             }
         }
 
-        // add remaining bytes if any
-        byteArray.push(...this.Remaining);
+        writer.bytes.push(...this.Remaining);
 
-        // convert to uint8array (not sure if necessary)
-        return new Uint8Array(byteArray);
+        return writer.bytes;
 
     };
 
 }
 
-try {
-    module.exports = Lookup;
-} catch (e) {
-    // ignore
-}
+try { module.exports = Lookup; } catch {}

@@ -95,6 +95,8 @@ function Map (bytes, name) {
         };
     }
 
+    this.Remaining = reader.bytes.slice(reader.index);
+
     this.Serialize = () => {
 
         const writer = new ByteWriter();        
@@ -184,14 +186,12 @@ function Map (bytes, name) {
             writer.int16(this.Sprites[i].extra);
         }
 
+        writer.bytes.push(...this.Remaining);
+
         return writer.bytes;
 
     }
 
 }
 
-try {
-    module.exports = Map;
-} catch (e) {
-    // ignore
-}
+try { module.exports = Map; } catch {}

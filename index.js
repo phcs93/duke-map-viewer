@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, {});
     console.log(Globals.Database);
 
-    // load custom grp (for map rendering)
-    Globals.GRP = new GRP(new Uint8Array(await (await fetch(`bin/custom_duke3d.grp`)).arrayBuffer()));  
+    // load custom grp (for map rendering)    
+    Globals.GRP = new GRP(new Uint8Array(await (await fetch(`bin/custom_duke3d.grp`)).arrayBuffer()));    
     // throw away file bytes from GRP after serialization to reduce memory consuption
     Globals.GRP.Files = [];  
     console.log(Globals.GRP);
@@ -299,12 +299,11 @@ function renderMapSVG(map) {
     svg.viewBox.baseVal.width = width;
     svg.viewBox.baseVal.height = height;
 
-    const strokeWidth = 0.001 * Math.max(width, height);
-
     const elements = [];
 
     const paths = [];
 
+    // sectors
     for (const i in map.Sectors) {
 
         const sector = map.Sectors[i];
@@ -373,19 +372,21 @@ function renderMapSVG(map) {
 
     elements.push(...paths.sort((a, b) => b.z - a.z).map(p => p.path));
 
+    // walls
     for (const wall of map.Walls) {
         const x1 = wall.x;
         const y1 = wall.y;
         const x2 = map.Walls[wall.point2].x;
         const y2 = map.Walls[wall.point2].y;
         const stroke = wall.nextwall === 65535 ? "white" : "red";
-        const line = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${strokeWidth}" />`;
+        const line = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="10" />`;
         //elements.push(line);
     }
 
     const floorSprites = [];
     const itemSprites = [];
 
+    // sprites
     for (const sprite of map.Sprites) {
 
         const itemPicnums = [
@@ -409,12 +410,12 @@ function renderMapSVG(map) {
             const alpha = sprite.cstat.hasBit(SpriteCstat.Transluscence2) ? 100 : (sprite.cstat.hasBit(SpriteCstat.Transluscence1) ? 200 : 255);
             const colors = Globals.GRP.GetColors(0, null, null);
             const dataURL = tileToDataURL(tile, colors, alpha);
-            const image = `<image id="sprite-${sprite.picnum}-image" width="${w}" height="${h}" x="${x}" y="${y}" href="${dataURL}" transform="rotate(${a} ${sprite.x} ${sprite.y})" />`;
+            const image = `<image preserveAspectRatio="none" id="sprite-${sprite.picnum}-image" width="${w}" height="${h}" x="${x}" y="${y}" href="${dataURL}" transform="rotate(${a} ${sprite.x} ${sprite.y})" />`;
             floorSprites.push(image);
 
-            // const rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" stroke="purple" stroke-width="${strokeWidth}" fill="transparent" stroke-dasharray="20,20" />`;
-            // const line1 = `<line x1="${x}" y1="${y}" x2="${x + w}" y2="${y + h}" stroke="purple" stroke-width="${strokeWidth}" stroke-dasharray="20,20" />`;
-            // const line2 = `<line x1="${x}" y1="${y + h}" x2="${x + w}" y2="${y}" stroke="purple" stroke-width="${strokeWidth}" stroke-dasharray="20,20" />`;
+            // const rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" stroke="purple" stroke-width="10" fill="transparent" stroke-dasharray="20,20" />`;
+            // const line1 = `<line x1="${x}" y1="${y}" x2="${x + w}" y2="${y + h}" stroke="purple" stroke-width="10" stroke-dasharray="20,20" />`;
+            // const line2 = `<line x1="${x}" y1="${y + h}" x2="${x + w}" y2="${y}" stroke="purple" stroke-width="10" stroke-dasharray="20,20" />`;
             // elements.push(rect);
             // elements.push(line1);
             // elements.push(line2);

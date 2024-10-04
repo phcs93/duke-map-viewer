@@ -1,25 +1,15 @@
 function GRP (bytes) {
 
-    let index = 0; 
+    const reader = new ByteReader(bytes);
 
-    const b = (n) => bytes[index++] << n;
-    
-    const byte = () => (b(0) << 24) >> 24;
-    const int16 = () => b(0)|b(8);
-    const int32 = () => b(0)|b(8)|b(16)|b(24);
+    this.Signature = new Array(12).fill(0).map(() => String.fromCharCode(reader.int8())).join("");
 
-    const ubyte = () => byte() & 0xFF;
-    const uint16 = () => int16() & 0xFFFF;
-    const uint32 = () => int32() & 0xFFFFFFFF;
-
-    this.Signature = new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("");
-
-    this.Files = new Array(uint32());
+    this.Files = new Array(reader.uint32());
 
     for (let i = 0; i < this.Files.length; i++) {
         this.Files[i] = {
-            name: new Array(12).fill(0).map(() => String.fromCharCode(byte())).join("").replace(/\x00/g, ""),
-            size: uint32(),
+            name: new Array(12).fill(0).map(() => String.fromCharCode(reader.int8())).join("").replace(/\x00/g, ""),
+            size: reader.uint32(),
             bytes: []
         }
     }
@@ -30,8 +20,8 @@ function GRP (bytes) {
     this.Maps = [];
 
     for (let i = 0; i < this.Files.length; i++) {
-        this.Files[i].bytes = bytes.slice(index, index + this.Files[i].size);
-        index += this.Files[i].size;
+        this.Files[i].bytes = reader.bytes.slice(reader.index, reader.index + this.Files[i].size);
+        reader.index += this.Files[i].size;
         switch (true) {
             case this.Files[i].name === "PALETTE.DAT": this.Palette = new Palette(this.Files[i].bytes); break;
             case this.Files[i].name === "LOOKUP.DAT": this.Lookup = new Lookup(this.Files[i].bytes); break;
@@ -49,51 +39,47 @@ function GRP (bytes) {
         return tiles; 
     }, []);
 
-    this.Remaining = bytes.slice(index);
+    this.Remaining = reader.bytes.slice(reader.index);
 
     this.Serialize = () => {
 
-        const int16ToBytes = (i) => [i>>0,i>>8];
-        const int32ToBytes = (i) => [i>>0,i>>8,i>>16,i>>24];
+        const writer = new ByteWriter();
 
-        const byteArray = [];
+        writer.bytes.push(...this.Signature.split("").map(c => c.charCodeAt(0)));
 
-        byteArray.push(...this.Signature.split("").map(c => c.charCodeAt(0)));
-
-        byteArray.push(...int32ToBytes(this.Files.length));
+        writer.int32(this.Files.length);
 
         for (let i = 0; i < this.Files.length; i++) {            ;
-            byteArray.push(...this.Files[i].name.split("").reduce((a, c, p) => { a[p] = c.charCodeAt(0); return a; }, new Array(12).fill(0)));
-            byteArray.push(...int32ToBytes(this.Files[i].size));
+            writer.bytes.push(...this.Files[i].name.split("").reduce((a, c, p) => { a[p] = c.charCodeAt(0); return a; }, new Array(12).fill(0)));
+            writer.int32(this.Files[i].size);
         }
 
         for (let i = 0; i < this.Files.length; i++) { 
             switch (true) {
-                case this.Files[i].name.toUpperCase() === "PALETTE.DAT": byteArray.push(...this.Palette.Serialize()); break;
-                case this.Files[i].name.toUpperCase() === "LOOKUP.DAT": byteArray.push(...this.Lookup.Serialize()); break;
+                case this.Files[i].name.toUpperCase() === "PALETTE.DAT": writer.bytes.push(...this.Palette.Serialize()); break;
+                case this.Files[i].name.toUpperCase() === "LOOKUP.DAT": writer.bytes.push(...this.Lookup.Serialize()); break;
                 case this.Files[i].name.toUpperCase().endsWith(".ART"): {
                     const artBytes = this.Arts.filter(art => art.Name.toUpperCase() === this.Files[i].name.toUpperCase())[0].Serialize();
-                    for (const b of artBytes) byteArray.push(b);
+                    for (const b of artBytes) writer.bytes.push(b);
                     break;
                 }
                 case this.Files[i].name.toUpperCase().endsWith(".MAP"): {
                     const mapBytes = this.Maps.filter(map => map.Name.toUpperCase() === this.Files[i].name.toUpperCase())[0].Serialize(); 
-                    for (const b of mapBytes) byteArray.push(b);
+                    for (const b of mapBytes) writer.bytes.push(b);
                     break;
                 }
                 default: {
                     const fileBytes = this.Files[i].bytes; 
-                    for (const b of fileBytes) byteArray.push(b);
+                    for (const b of fileBytes) writer.bytes.push(b);
                     break;
                 }
             }
         }
 
-        // add remaining bytes if any
-        byteArray.push(...this.Remaining);
+        writer.bytes.push(...this.Remaining);
 
-        // convert to uint8array (not sure if necessary)
-        return new Uint8Array(byteArray);
+        return writer.bytes;
+
 
     };
 
@@ -106,8 +92,4 @@ function GRP (bytes) {
 
 }
 
-try {
-    module.exports = GRP;
-} catch (e) {
-    // ignore
-}
+try { module.exports = GRP; } catch {}

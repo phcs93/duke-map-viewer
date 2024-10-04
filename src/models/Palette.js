@@ -5,11 +5,11 @@ function Palette (bytes) {
     this.Colors = new Array(256);
 
     for (let i = 0; i < this.Colors.length; i++) {
-        // scale from 0...64 to 0...256 (DOS was limited)
-        const r = Math.lerp(0, 255, reader.uint8() / 64);
-        const g = Math.lerp(0, 255, reader.uint8() / 64);
-        const b = Math.lerp(0, 255, reader.uint8() / 64);
-        this.Colors[i] = [r, g, b];
+        this.Colors[i] = [
+            (reader.uint8() * 255) / 63,
+            (reader.uint8() * 255) / 63,
+            (reader.uint8() * 255) / 63
+        ];
     }
 
     this.Shades = new Array(reader.uint16());
@@ -35,9 +35,9 @@ function Palette (bytes) {
         
         for (let i = 0; i < this.Colors.length; i++) {
             const color = this.Colors[i];
-            writer.int8(Math.lerp(0, 64, color[0] / 255));
-            writer.int8(Math.lerp(0, 64, color[1] / 255));
-            writer.int8(Math.lerp(0, 64, color[2] / 255));
+            writer.int8((color[0] * 63) / 255);
+            writer.int8((color[1] * 63) / 255);
+            writer.int8((color[2] * 63) / 255);
         }
        
         writer.int16(this.Shades.length)
@@ -58,8 +58,4 @@ function Palette (bytes) {
 
 }
 
-try {
-    module.exports = Palette;
-} catch (e) {
-    // ignore
-}
+try { module.exports = Palette; } catch {}

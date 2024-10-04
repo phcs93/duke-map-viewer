@@ -8,8 +8,4 @@ function ByteWriter (bytes) {
 
 }
 
-try {
-    module.exports = ByteWriter;
-} catch (e) {
-    // ignore
-}
+try { module.exports = ByteWriter; } catch {}

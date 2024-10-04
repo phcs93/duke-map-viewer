@@ -15,8 +15,4 @@ function ByteReader (bytes) {
 
 }
 
-try {
-    module.exports = ByteReader;
-} catch (e) {
-    // ignore
-}
+try { module.exports = ByteReader; } catch {}
