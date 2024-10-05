@@ -325,40 +325,59 @@ function renderMapSVG(map) {
         paths.push({ z: sector.floorz, path: path });
 
         const picnum = sector.floorpicnum;
-        const tile = Globals.GRP.Tiles[picnum].pixels;
-        const smooth = sector.floorstat.hasBit(SectorCstat.DoubleSmooshiness);
-        let width = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
-        let height = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
+        let tile = Globals.GRP.Tiles[picnum].pixels;
+
         const shade = sector.floorshade > 31 ? 31 : (sector.floorshade < 0 ? 0 : sector.floorshade);
         const swap = sector.floorpal || null;
         const alternate = sector.lotag === 2 ? (sector.ceilingpicnum === 200 ? 1 : 0) : null;
         const colors = Globals.GRP.GetColors(shade, swap, alternate);
 
-        let swapxy = sector.floorstat.hasBit(SectorCstat.SwapXY);
-        let flipx = sector.floorstat.hasBit(SectorCstat.FlipX);
-        let flipy = sector.floorstat.hasBit(SectorCstat.FlipY);
-        let relativity = sector.floorstat.hasBit(SectorCstat.AlignTextureToFirstWallOfSector);        
+        const smooth = sector.floorstat.hasBit(SectorCstat.DoubleSmooshiness);
+        const swapxy = sector.floorstat.hasBit(SectorCstat.SwapXY);
+        const flipx = sector.floorstat.hasBit(SectorCstat.FlipX);
+        const flipy = sector.floorstat.hasBit(SectorCstat.FlipY);
+        const relativity = sector.floorstat.hasBit(SectorCstat.AlignTextureToFirstWallOfSector);    
 
-        let x = Math.lerp(0, width, sector.floorxpanning / 255);
-        let y = Math.lerp(0, height, sector.floorypanning / 255);
+        let width = 0;
+        let height = 0;
+        let x = 0;
+        let y = 0;
         let a = 0;
 
-        if (swapxy) {
-            const backup = width;
-            width = height;
-            height = backup;
-        }
+        if (!swapxy) {
+            width = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
+            height = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;    
+            x = -((sector.floorxpanning * width) / 255);
+            y = -((sector.floorypanning * height) / 255);
+            a = 0;
+        } else {
+            width = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;    
+            height = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
+            y = -((sector.floorxpanning * width) / 255);
+            x = -((sector.floorypanning * height) / 255);
+            a = 0;
+        }        
 
-        if (sector.floorstat.hasBit(SectorCstat.AlignTextureToFirstWallOfSector)) {
+        if (flipx) x = -x;
+        if (flipy) y = -y;
+
+        if (relativity) {
+            x = -x;
+            y = -y;
             const wall1 = map.Walls[sector.wallptr];
             const wall2 = map.Walls[wall1.point2];
             a += Math.atan2(wall1.y - wall2.y, wall1.x - wall2.x) * (180 / Math.PI);
-            // TO-DO => this is a little off
-            x += wall1.x;
-            y += wall1.y;
+            if (swapxy) {
+                x -= wall1.y;
+                y -= wall1.x;
+            } else {
+                x -= wall1.x;
+                y -= wall1.y;
+            }
         }
 
-        const dataURL = floorTileToDataURL(tile, colors, null, swapxy, flipx, flipy, relativity);
+        tile = tile.map(a => a.toReversed());
+        const dataURL = tileToDataURL(tile, colors, null, swapxy, flipx, flipy, relativity);
 
         elements.push(`
             <defs>
@@ -401,14 +420,17 @@ function renderMapSVG(map) {
         ];
 
         if (sprite.cstat.hasBit(SpriteCstat.FloorAligned)) {
-            const tile = Globals.GRP.Tiles[sprite.picnum].pixels;
+
+            let tile = Globals.GRP.Tiles[sprite.picnum].pixels;
             const w = tile.length > 0 ? (tile.length * 16) * (sprite.xrepeat / 64) : 1;
             const h = tile.length > 0 ? (tile[0].length * 16) * (sprite.yrepeat / 64) : 1;
             const x = sprite.x - (w / 2);
             const y = sprite.y - (h / 2);
-            const a = Math.lerp(0, 360, sprite.ang / 2048) + 90;
-            const alpha = sprite.cstat.hasBit(SpriteCstat.Transluscence2) ? 100 : (sprite.cstat.hasBit(SpriteCstat.Transluscence1) ? 200 : 255);
+            const a = (sprite.ang / 2048) * 360 + 90;
+            const alpha = sprite.cstat.hasBit(SpriteCstat.Transluscence2) ? 100 : (sprite.cstat.hasBit(SpriteCstat.Transluscence1) ? 150 : 255);
             const colors = Globals.GRP.GetColors(0, null, null);
+            const flipx = sprite.cstat.hasBit(SpriteCstat.FlippedX);
+            if (flipx) tile = tile.toReversed();
             const dataURL = tileToDataURL(tile, colors, alpha);
             const image = `<image preserveAspectRatio="none" id="sprite-${sprite.picnum}-image" width="${w}" height="${h}" x="${x}" y="${y}" href="${dataURL}" transform="rotate(${a} ${sprite.x} ${sprite.y})" />`;
             floorSprites.push(image);
@@ -466,39 +488,8 @@ function renderMapSVG(map) {
 
 }
 
-function tileToDataURL(tile, colors, alpha) {
-
-    const empty = tile.length === 0;
-    if (empty) tile = [[255]];
-
-    const canvas = document.createElement("canvas");
-    canvas.width = tile.length;
-    canvas.height = tile[0].length;
-    const context = canvas.getContext("2d");
-
-    const data = context.createImageData(canvas.width, canvas.height);
-
-    // iterate the Y axis first because the tiles are stored in the opposite coordinate system than the screen memory is stored
-    for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-            const index = tile[x][y];
-            const color = colors[index];
-            const i = x + y * tile.length;
-            data.data[i * 4 + 0] = color[0];
-            data.data[i * 4 + 1] = color[1];
-            data.data[i * 4 + 2] = color[2];
-            data.data[i * 4 + 3] = index === 255 ? (empty ? 255 : 0) : (alpha ? alpha : 255);
-        }
-    }
-
-    context.putImageData(data, 0, 0);
-
-    return canvas.toDataURL();
-
-}
-
 // build engine reads floor textures in a fucked way
-function floorTileToDataURL(tile, colors, alpha, swapxy, flipx, flipy, relativity) {
+function tileToDataURL(tile, colors, alpha, swapxy, flipx, flipy, relativity) {
 
     const empty = tile.length === 0;
     if (empty) tile = [[255]];
@@ -507,53 +498,28 @@ function floorTileToDataURL(tile, colors, alpha, swapxy, flipx, flipy, relativit
     const fx = () => tile = tile.map(a => a.toReversed());
     const fy = () => tile = tile.toReversed();
 
-    fx();
-
     if (!relativity) {
-
-        if (!swapxy && !flipx && !flipy) { // 0
-            // nothing
-        } else if (swapxy && !flipx && flipy) { // 90
-            sxy(); fy();
-        } else if (!swapxy && flipx && flipy) { // 180
-            fx(); fy();
-        } else if (swapxy && flipx && !flipy) { // 270
-            sxy(); fx();
-        } else if (!swapxy && flipx && !flipy) { // 0 m
-            fy();
-        } else if (swapxy && flipx && flipy) { // 90 m
-            sxy(); fx(); fy();
-        } else if (!swapxy && !flipx && flipy) { // 180 m
-            fx();
-        } else if (swapxy && !flipx && !flipy) { // 270 m
-            sxy();
+        switch (true) {
+            case (!swapxy && !flipx && !flipy):                    break; // 0
+            case ( swapxy && !flipx &&  flipy): sxy();       fy(); break; // 90
+            case (!swapxy &&  flipx &&  flipy):        fx(); fy(); break; // 180
+            case ( swapxy &&  flipx && !flipy): sxy(); fx();       break; // 270
+            case (!swapxy &&  flipx && !flipy):              fy(); break; // 0 m
+            case ( swapxy &&  flipx &&  flipy): sxy(); fx(); fy(); break; // 90 m
+            case (!swapxy && !flipx &&  flipy):        fx();       break; // 180 m
+            case ( swapxy && !flipx && !flipy): sxy();             break; // 270 m
         }
-
     } else {
-
-        if (!swapxy && !flipx && !flipy) { // 0
-            fy();
-        } else if (swapxy && !flipx && flipy) { // 90
-            sxy();
-        } else if (!swapxy && flipx && flipy) { // 180
-            fx();
-        } else if (swapxy && flipx && !flipy) { // 270
-            sxy();
-            fx();
-            fy();
-        } else if (!swapxy && flipx && !flipy) { // 0 m
-            // nothing
-        } else if (swapxy && flipx && flipy) { // 90 m
-            sxy();
-            fx();
-        } else if (!swapxy && !flipx && flipy) { // 180 m
-            fx();
-            fy();
-        } else if (swapxy && !flipx && !flipy) { // 270 m
-            sxy();
-            fy();
+        switch (true) {
+            case (!swapxy && !flipx && !flipy):              fy(); break; // 0
+            case ( swapxy && !flipx &&  flipy): sxy();             break; // 90
+            case (!swapxy &&  flipx &&  flipy):        fx();       break; // 180
+            case ( swapxy &&  flipx && !flipy): sxy(); fx(); fy(); break; // 270
+            case (!swapxy &&  flipx && !flipy):                    break; // 0 m
+            case ( swapxy &&  flipx &&  flipy): sxy(); fx();       break; // 90 m
+            case (!swapxy && !flipx &&  flipy):        fx(); fy(); break; // 180 m
+            case ( swapxy && !flipx && !flipy): sxy();       fy(); break; // 270 m
         }
-
     }
 
     const canvas = document.createElement("canvas");
