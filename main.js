@@ -78,7 +78,7 @@ for (const file of fs.readdirSync("./bin/maps")) {
             }
         },
         effectors: Object.keys(EffectorTag).reduce((counters, tag) => {
-            counters[tag] = map.Sprites.filter(s => s.picnum === Picnum.Effector && s.lotag === EffectorTag[tag]).length;
+            counters[tag] = map.Sprites.filter(s => s.picnum === Picnum.Effectors.SectorEffector && s.lotag === EffectorTag[tag]).length;
             return counters;
         }, {}),
         sectors: Object.keys(SectorTag).reduce((counters, tag) => {

@@ -1,5 +1,16 @@
 Picnum = {
-    Effector: 1,
+    Effectors: {
+        SectorEffector: 1,
+        Activator: 2,
+        Touchplate: 3,
+        Locker: 4,
+        MusicAndSfx: 5,
+        Locator: 6,
+        Cycler: 7,
+        MasterSwitch: 8,
+        Respawn: 9,
+        Speed: 10
+    },
     Spawn: 1405,
     Card: 60,
     Weapons: {
@@ -38,7 +49,7 @@ Picnum = {
         Small: 51,
         Medium: 52,
         Atomic: 100
-    },    
+    },
     NDuke: {
         Flag: 5120
     },

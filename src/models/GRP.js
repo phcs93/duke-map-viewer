@@ -84,6 +84,8 @@ function GRP (bytes) {
     };
 
     this.GetColors = (shade, swap, alternate) => {
+        if (shade > this.Palette.Shades.length - 1) shade = this.Palette.Shades.length - 1;
+        if (shade < 0) shade = 0;
         const swaps = this.Lookup.Swaps.reduce((d, s) => { d[s.index] = s; return d; }, {});
         let colors = alternate !== null ? this.Lookup.Alternates[alternate] : this.Palette.Colors;
         if (swap != null) colors = colors.map((c, i) => colors[swaps[swap].table[i]]);

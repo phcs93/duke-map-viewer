@@ -9,23 +9,16 @@ https://phcs93.github.io/duke-map-viewer/
 - map filtering
   - consider netduke32 ctf/tdm maps -> check how its done
 
+- tile
+  - render tile animation
+  - optimize number of defs and patterns => create an unique id for each comnbination
+
 - floor
   - render tile alignment (based on sector first wall or not)
   - render tile panning
-  - render tile animation
 
 - sprites
   - render spawn angle
-  - render camera aligned sprites Y as y - height
-  - render sprite animation
-  - render "multiplayer only" sprites?
-  - render all non item sprites like floor sprites and decoration sprites
   - render player 1
-  - double check if floor aligned sprites are being rendered with corret size
-
-- fix rendering order based on z and element type
-  - first render all sectors based on floorz
-  - then -> render all decorative sprites based on z
-  - then -> render all items above everything
 
 - fix grp serialization -> it doesnt consider files not added to "this.Files"
