@@ -1,4 +1,4 @@
-function MapToSVG(map, grp, svg) {
+function MapToSVG (map, grp, svg) {
 
     if (!svg) svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -139,6 +139,7 @@ function MapToSVG(map, grp, svg) {
         const sprite = map.Sprites[index];
 
         const tile = grp.Tiles[sprite.picnum].pixels;
+        const animation = grp.Tiles[sprite.picnum].animation;
 
         // don't render effectors
         if (effectorPicnums.includes(sprite.picnum)) continue;
@@ -186,10 +187,12 @@ function MapToSVG(map, grp, svg) {
         }
 
         // add tile to dictionary if not already there
-        const id = `${sprite.picnum}#${sprite.shade}#${swap}#${alternate}`;
+        const id = `${sprite.picnum}$${sprite.shade}$${swap}$${alternate}`;
         if (!tiles[id]) {
+
             const colors = grp.GetColors(shade, swap, null);
             const dataURL = TileToCanvas(tile, colors).toDataURL();
+
             tiles[id] = `<image 
                 id="${id}" 
                 width="${tile.length}" 
@@ -197,13 +200,64 @@ function MapToSVG(map, grp, svg) {
                 href="${dataURL}" 
                 preserveAspectRatio="none"
             />`;
+
+            // also add animation data if it exists
+            if (animation.type && animation.frames) {
+
+                const speed = Math.pow(animation.speed * 3, 2);
+
+                const dataURLs = [];
+                
+                const orderedTiles = Object.keys(grp.Tiles);
+
+                const rootIndex = orderedTiles.findIndex(picnum => parseInt(picnum) === sprite.picnum);
+
+                switch (animation.type) {
+                    case AnimationType.Oscilating: {
+                        for (let i = rootIndex; i <= rootIndex + animation.frames; i++) {
+                            const p = orderedTiles[i];
+                            const t = grp.Tiles[p].pixels;
+                            dataURLs.push(TileToCanvas(t, colors).toDataURL());
+                        }
+                        break;
+                    }
+                    case AnimationType.Forward: {
+                        for (let i = rootIndex; i <= rootIndex + animation.frames; i++) {
+                            const p = orderedTiles[i];
+                            const t = grp.Tiles[p].pixels;
+                            dataURLs.push(TileToCanvas(t, colors).toDataURL());
+                        }
+                        break;
+                    }
+                    case AnimationType.Backward: {
+                        for (let i = rootIndex; i >= rootIndex - animation.frames; i--) {
+                            const p = orderedTiles[i];
+                            const t = grp.Tiles[p].pixels;
+                            dataURLs.push(TileToCanvas(t, colors).toDataURL());
+                        }
+                        break;
+                    }
+                }                
+
+                animations.push(`                    
+                    const image${id} = document.getElementById("${id}");                    
+                    const frames${id} = [${dataURLs.map(url => `"${url}"`).join(",")}];
+                    let index${id} = 0;
+                    setInterval(() => {
+                        image${id}.setAttribute("href", frames${id}[index${id}++]);
+                        index${id} = index${id} % frames${id}.length;
+                    }, ${speed});
+                `);
+
+            }
+
         }        
 
         // create pattern for rectangle (this is the only way to scale and translate)
         // TO-DO => check if it is possible to do this without a <pattern> since we don't need it to repeat here
         patterns.push(`
             <pattern id="sprite-${index}-pattern" width="${w}" height="${h}" x="${x}" y="${y}" patternUnits="userSpaceOnUse">
-                <use xlink:href="#${id}" transform="scale(${w/tile.length},${h/tile[0].length})" />
+                <use href="#${id}" transform="scale(${w/tile.length},${h/tile[0].length})" />
             </pattern>
         `);
 
@@ -280,10 +334,14 @@ function MapToSVG(map, grp, svg) {
     elements.push(...sectorPaths.sort((a, b) => b.z - a.z).map(p => p.path));
     elements.push(...floorSprites.sort((a, b) => b.z - a.z).map(s => s.image));
     elements.push(...cameraSprites.sort((a, b) => b.z - a.z).map(s => s.image));
-    elements.push(...itemSprites.sort((a, b) => b.z - a.z).map(s => s.image));   
-    //elements.push(...animations);
+    elements.push(...itemSprites.sort((a, b) => b.z - a.z).map(s => s.image));
 
     svg.insertAdjacentHTML("beforeend", elements.join(""));
+    
+    const script = document.createElement("script");
+    script.type = "application/javascript";
+    script.textContent = animations.join("");
+    svg.appendChild(script);
 
     return svg;
 
