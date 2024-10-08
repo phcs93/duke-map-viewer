@@ -1,6 +1,7 @@
 function MapToSVG (map, grp, svg) {
 
     if (!svg) svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "http://www.w3.org/2000/svg");
     svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
     svg.classList.add("mouse");
 
@@ -239,14 +240,21 @@ function MapToSVG (map, grp, svg) {
                     }
                 }                
 
-                animations.push(`                    
-                    const image${id} = document.getElementById("${id}");                    
-                    const frames${id} = [${dataURLs.map(url => `"${url}"`).join(",")}];
-                    let index${id} = 0;
-                    setInterval(() => {
-                        image${id}.setAttribute("href", frames${id}[index${id}++]);
-                        index${id} = index${id} % frames${id}.length;
+                animations.push(`
+
+                    window.animations["${id}"] = {
+                        image: document.getElementById("${id}"),
+                        frames: [${dataURLs.map(url => `"${url}"`).join(",")}],
+                        index: 0,
+                        interval: null
+                    }
+
+                    window.animations["${id}"].interval = setInterval(() => {
+                        const animation = window.animations["${id}"];
+                        animation.image.setAttribute("href", animation.frames[animation.index++]);
+                        animation.index = animation.index % animation.frames.length;
                     }, ${speed});
+
                 `);
 
             }
@@ -340,7 +348,13 @@ function MapToSVG (map, grp, svg) {
     
     const script = document.createElement("script");
     script.type = "application/javascript";
-    script.textContent = animations.join("");
+    script.textContent = `        
+        if (window.animations) {
+            for (const animation of Object.values(window.animations)) window.clearInterval(animation.interval);
+        }
+        window.animations = {};
+        ${animations.join("")}
+    `;
     svg.appendChild(script);
 
     return svg;

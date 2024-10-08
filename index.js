@@ -211,6 +211,7 @@ async function renderMap(name) {
     const map = new Map(new Uint8Array(bytes), name);
     renderMapDetails(name);
     //const svg = document.getElementById("map-svg");
+    document.getElementById("map-preview").innerHTML = null;
     const svg = MapToSVG(map, Globals.GRP);
     document.getElementById("map-preview").appendChild(svg);
 }
