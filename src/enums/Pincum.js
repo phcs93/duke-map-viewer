@@ -61,5 +61,17 @@ Picnum = {
         HurtRail: 859,
         FloorPlasma: 1082,
         PurpleLava: 4240
+    },
+    get Items () {
+        return [
+            Picnum.Spawn,
+            Picnum.Card,
+            ...Object.values(Picnum.Weapons),
+            ...Object.values(Picnum.Ammo),
+            ...Object.values(Picnum.Inventory),
+            ...Object.values(Picnum.Health),
+            Picnum.ProDuke.Flag,
+            Picnum.NDuke.Flag
+        ];
     }
 }

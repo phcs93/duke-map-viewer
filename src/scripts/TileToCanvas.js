@@ -20,6 +20,7 @@ function TileToCanvas (tile, colors, canvas) {
             data.data[i * 4 + 1] = color[1];
             data.data[i * 4 + 2] = color[2];
             data.data[i * 4 + 3] = index === 255 ? (empty ? 255 : 0) : 255;
+            
         }
     }
 

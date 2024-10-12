@@ -1,4 +1,4 @@
-function MapToSVG (map, grp, svg) {
+function MapToSVG(map, grp, svg) {
 
     if (!svg) svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "http://www.w3.org/2000/svg");
@@ -21,6 +21,7 @@ function MapToSVG (map, grp, svg) {
     svg.viewBox.baseVal.height = height;
 
     const tiles = {};
+    const sizes = {};
     const patterns = [];
     const sectorPaths = [];
     const floorSprites = [];
@@ -28,18 +29,147 @@ function MapToSVG (map, grp, svg) {
     const itemSprites = [];
     const animations = [];
 
-    const itemPicnums = [
-        Picnum.Spawn,
-        Picnum.Card,
-        ...Object.values(Picnum.Weapons),
-        ...Object.values(Picnum.Ammo),
-        ...Object.values(Picnum.Inventory),
-        ...Object.values(Picnum.Health),
-        Picnum.ProDuke.Flag,
-        Picnum.NDuke.Flag
-    ];
-
+    const itemPicnums = Picnum.Items;
     const effectorPicnums = Object.values(Picnum.Effectors);
+
+    // this "caches" all tile and animation data for it to be used by the <pattern> tags, reducing a lot of memory
+    // every combination of [picnum + shade + swap + alternate] generates a separate entry in the cache
+    // this also returns the width and height of the tile (considering animation offsets)
+    const cacheTileAndAnimation = (picnum, shade, swap, alternate) => {
+        
+        // generate unique identifier for this tile combination
+        const id = `${picnum}_${shade}_${swap}_${alternate}`;
+
+        // get colors for this tile combination
+        const colors = grp.GetColors(shade, swap, null);
+
+        // add tile to cache if not already there
+        if (!tiles[id]) {
+
+            const animation = grp.Tiles[picnum].animation;
+
+            // if tile has no animation
+            if (!animation.frames) { 
+
+                const tile = grp.Tiles[picnum].pixels;                
+                const dataURL = TileToCanvas(tile, colors).toDataURL();
+
+                tiles[id] = `<image 
+                    id="${id}" 
+                    width="${tile.length}" 
+                    height="${tile[0].length}" 
+                    href="${dataURL}" 
+                    preserveAspectRatio="none"
+                />`;
+
+                sizes[id] = {
+                    width: tile.length,
+                    height: tile[0].length
+                };
+
+            } else {
+
+                // aproximate the animation speed as best as I can
+                const speed = Math.pow(animation.speed * 3.5, 2) * animation.frames;            
+
+                // get actuall index of pincum from array
+                const orderedPicnums = Object.keys(grp.Tiles);
+
+                // find the index of the first frame of the animation
+                const rootIndex = orderedPicnums.findIndex(p => parseInt(p) === picnum);
+
+                // store all tilesn from animation
+                const animationTiles = [];
+
+                // get tiles in order corresponding to animation type
+                switch (animation.type) {
+                    // get tiles twice, iterating from start to finish and from finish to start
+                    case AnimationType.Oscilating: {
+                        for (let i = rootIndex; i <= rootIndex + animation.frames; i++) {
+                            animationTiles.push(grp.Tiles[orderedPicnums[i]]);                            
+                        }
+                        for (let i = rootIndex + animation.frames; i >= rootIndex; i--) {
+                            animationTiles.push(grp.Tiles[orderedPicnums[i]]);      
+                        }
+                        break;
+                    }
+                    // iterate forwards
+                    case AnimationType.Forward: {
+                        for (let i = rootIndex; i <= rootIndex + animation.frames; i++) {
+                            animationTiles.push(grp.Tiles[orderedPicnums[i]]);      
+                        }
+                        break;
+                    }
+                    // iterate backwards
+                    case AnimationType.Backward: {
+                        for (let i = rootIndex; i >= rootIndex - animation.frames; i--) {
+                            animationTiles.push(grp.Tiles[orderedPicnums[i]]);      
+                        }
+                        break;
+                    }
+                }
+
+                // get max width and height of animation frames
+                const maxWidth = Math.max(...animationTiles.map(t => t.pixels.length));
+                const maxHeight = Math.max(...animationTiles.map(t => t.pixels[0].length));
+
+                // get max x and y animation offsets (positive and negative)
+                const maxPositiveOffsetX = Math.max(0, ...animationTiles.filter(t => t.animation.offsetX >= 0).map(t => t.animation.offsetX));
+                const maxPositiveOffsetY = Math.max(0, ...animationTiles.filter(t => t.animation.offsetY >= 0).map(t => t.animation.offsetY));
+                const maxNegativeOffsetX = Math.abs(Math.min(0, ...animationTiles.filter(t => t.animation.offsetX <= 0).map(t => t.animation.offsetX)));
+                const maxNegativeOffsetY = Math.abs(Math.min(0, ...animationTiles.filter(t => t.animation.offsetY <= 0).map(t => t.animation.offsetY)));
+
+                // sum everything to determine sprite size (ensure that width and height are even numbers)
+                const width = ((maxWidth + maxPositiveOffsetX + maxNegativeOffsetX) | 1) + 1;
+                const height = ((maxHeight + maxPositiveOffsetY + maxNegativeOffsetY) | 1) + 1;
+
+                const images = [];                
+
+                for (let i = 0; i < animationTiles.length; i++) {
+                    const animation = animationTiles[i].animation;
+                    const offsetX = Math.round((width - animationTiles[i].pixels.length) / 2) + -animation.offsetX;
+                    const offsetY = Math.round((height - animationTiles[i].pixels[0].length) / 2) + -animation.offsetY;
+                    const tile = animationTiles[i].pixels.offset("x", offsetX, 255).offset("y", offsetY, 255);
+                    const dataUrl = TileToCanvas(tile, colors).toDataURL();
+                    images.push(`
+                        <image 
+                            id="${id}_${i}" 
+                            width="${tile.length}" 
+                            height="${tile[0].length}" 
+                            href="${dataUrl}" 
+                            preserveAspectRatio="none"
+                        />
+                    `);
+                }
+
+                tiles[id] = `
+                
+                    ${images.join("")}                
+
+                    <use id="${id}" href="#${id}_0">
+                        <animate
+                            attributeName="href"
+                            values="${images.map((_, i) => `#${id}_${i}`).join(";")}"
+                            dur="${speed}ms"
+                            repeatCount="indefinite"
+                        />
+                    </use>
+                
+                `;
+
+                sizes[id] = {
+                    width: width,
+                    height: height
+                };
+
+            }
+
+        }
+
+        // return cached tile infomation (width and height)
+        return sizes[id];
+
+    };
 
     // sectors
     for (const i in map.Sectors) {
@@ -138,9 +268,7 @@ function MapToSVG (map, grp, svg) {
     for (let index = 0; index < map.Sprites.length; index++) {
 
         const sprite = map.Sprites[index];
-
         const tile = grp.Tiles[sprite.picnum].pixels;
-        const animation = grp.Tiles[sprite.picnum].animation;
 
         // don't render effectors
         if (effectorPicnums.includes(sprite.picnum)) continue;
@@ -156,13 +284,6 @@ function MapToSVG (map, grp, svg) {
         const t2 = sprite.cstat.hasBit(SpriteCstat.Transluscence2);
         const t0 = sprite.cstat.hasBit(SpriteCstat.Invisible);
 
-        const w = floor ? (tile.length * 16) * (sprite.xrepeat / 64) : (tile.length * 8);
-        const h = floor ? (tile[0].length * 16) * (sprite.yrepeat / 64) : (tile[0].length * 8);
-        const x = floor ? sprite.x - (w / 2) : sprite.x - (w / 2);
-        const y = floor ? sprite.y - (h / 2) : sprite.y - h;
-        const angle = floor ? (sprite.ang / 2048) * 360 + 90 : 0;
-        const alpha = t0 ? 0.0 : (t2 ? 0.3 : (t1 ? 0.6 : 1.0));
-        const shade = sprite.shade;
         let swap = sprite.pal || null;
         const alternate = null; // TO-DO => what could this be used for?
 
@@ -186,91 +307,27 @@ function MapToSVG (map, grp, svg) {
             }
 
         }
+        
+        // cache tile and animation data
+        const {width, height} = cacheTileAndAnimation(sprite.picnum, sprite.shade, swap, alternate);        
 
-        // add tile to dictionary if not already there
-        const id = `${sprite.picnum}$${sprite.shade}$${swap}$${alternate}`;
-        if (!tiles[id]) {
-
-            const colors = grp.GetColors(shade, swap, null);
-            const dataURL = TileToCanvas(tile, colors).toDataURL();
-
-            tiles[id] = `<image 
-                id="${id}" 
-                width="${tile.length}" 
-                height="${tile[0].length}" 
-                href="${dataURL}" 
-                preserveAspectRatio="none"
-            />`;
-
-            // also add animation data if it exists
-            if (animation.type && animation.frames) {
-
-                const speed = Math.pow(animation.speed * 3, 2);
-
-                const dataURLs = [];
-                
-                const orderedTiles = Object.keys(grp.Tiles);
-
-                const rootIndex = orderedTiles.findIndex(picnum => parseInt(picnum) === sprite.picnum);
-
-                switch (animation.type) {
-                    case AnimationType.Oscilating: {
-                        for (let i = rootIndex; i <= rootIndex + animation.frames; i++) {
-                            const p = orderedTiles[i];
-                            const t = grp.Tiles[p].pixels;
-                            dataURLs.push(TileToCanvas(t, colors).toDataURL());
-                        }
-                        break;
-                    }
-                    case AnimationType.Forward: {
-                        for (let i = rootIndex; i <= rootIndex + animation.frames; i++) {
-                            const p = orderedTiles[i];
-                            const t = grp.Tiles[p].pixels;
-                            dataURLs.push(TileToCanvas(t, colors).toDataURL());
-                        }
-                        break;
-                    }
-                    case AnimationType.Backward: {
-                        for (let i = rootIndex; i >= rootIndex - animation.frames; i--) {
-                            const p = orderedTiles[i];
-                            const t = grp.Tiles[p].pixels;
-                            dataURLs.push(TileToCanvas(t, colors).toDataURL());
-                        }
-                        break;
-                    }
-                }                
-
-                animations.push(`
-
-                    window.animations["${id}"] = {
-                        image: document.getElementById("${id}"),
-                        frames: [${dataURLs.map(url => `"${url}"`).join(",")}],
-                        index: 0,
-                        interval: null
-                    }
-
-                    window.animations["${id}"].interval = setInterval(() => {
-                        const animation = window.animations["${id}"];
-                        animation.image.setAttribute("href", animation.frames[animation.index++]);
-                        animation.index = animation.index % animation.frames.length;
-                    }, ${speed});
-
-                `);
-
-            }
-
-        }        
+        const w = floor ? (width * 16) * (sprite.xrepeat / 64) : (width * 8);
+        const h = floor ? (height * 16) * (sprite.yrepeat / 64) : (height * 8);
+        const x = floor ? sprite.x - (w / 2) : sprite.x - (w / 2);
+        const y = floor ? sprite.y - (h / 2) : sprite.y - h;
+        const angle = floor ? (sprite.ang / 2048) * 360 + 90 : 0;
+        const alpha = t0 ? 0.0 : (t2 ? 0.3 : (t1 ? 0.6 : 1.0));
 
         // create pattern for rectangle (this is the only way to scale and translate)
         // TO-DO => check if it is possible to do this without a <pattern> since we don't need it to repeat here
         patterns.push(`
             <pattern id="sprite-${index}-pattern" width="${w}" height="${h}" x="${x}" y="${y}" patternUnits="userSpaceOnUse">
-                <use href="#${id}" transform="scale(${w/tile.length},${h/tile[0].length})" />
+                <use href="#${sprite.picnum}_${sprite.shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
             </pattern>
         `);
 
         const image = `
-            <rect             
+            <rect          
                 width="${w}" 
                 height="${h}" 
                 x="${x}" 
@@ -284,34 +341,6 @@ function MapToSVG (map, grp, svg) {
                 "
             />
         `;
-
-        /*
-            frames: isolate(animation, 0, 5) & 0x3F, // uint6
-            type: isolate(animation, 6, 7), // int2
-            offsetX: isolate(animation, 8, 15), // int8
-            offsetY: isolate(animation, 16, 23), // int8
-            speed: isolate(animation, 24, 27) & 0x0F, // uint4
-            unused: isolate(animation, 28, 31) // int4
-        */
-
-        if (grp.Tiles[sprite.picnum].animation.type) {
-
-            // const scriptContent = `
-                
-            //         function aaa${index}() {
-            //             const image = document.getElementById("sprite-${index}");
-            //             console.log(image);
-            //         }
-            //         setInterval(aaa${index}, 1000);
-                
-            // `;
-            
-            // const scriptElement = document.createElementNS("http://www.w3.org/2000/svg", "script");
-            // scriptElement.setAttribute("type", "application/ecmascript");
-            // scriptElement.textContent = scriptContent;
-            // svg.appendChild(scriptElement);
-
-        }
 
         switch (true) {
             case sprite.cstat.hasBit(SpriteCstat.FloorAligned): {
@@ -338,24 +367,13 @@ function MapToSVG (map, grp, svg) {
             ${patterns.join("")}
         </defs>
     `);
-    
+
     elements.push(...sectorPaths.sort((a, b) => b.z - a.z).map(p => p.path));
     elements.push(...floorSprites.sort((a, b) => b.z - a.z).map(s => s.image));
     elements.push(...cameraSprites.sort((a, b) => b.z - a.z).map(s => s.image));
     elements.push(...itemSprites.sort((a, b) => b.z - a.z).map(s => s.image));
 
     svg.insertAdjacentHTML("beforeend", elements.join(""));
-    
-    const script = document.createElement("script");
-    script.type = "application/javascript";
-    script.textContent = `        
-        if (window.animations) {
-            for (const animation of Object.values(window.animations)) window.clearInterval(animation.interval);
-        }
-        window.animations = {};
-        ${animations.join("")}
-    `;
-    svg.appendChild(script);
 
     return svg;
 

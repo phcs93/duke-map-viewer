@@ -32,8 +32,8 @@ function Art (bytes, name) {
         this.Tiles[i].animation = {
             frames: isolate(animation, 0, 5) & 0x3F, // uint6
             type: isolate(animation, 6, 7), // int2
-            offsetX: isolate(animation, 8, 15), // int8
-            offsetY: isolate(animation, 16, 23), // int8
+            offsetX: (isolate(animation, 8, 15) << 24) >> 24, // int8
+            offsetY: (isolate(animation, 16, 23) << 24) >> 24, // int8
             speed: isolate(animation, 24, 27) & 0x0F, // uint4
             unused: isolate(animation, 28, 31) // int4
         };
