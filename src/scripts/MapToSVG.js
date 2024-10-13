@@ -111,17 +111,11 @@ function MapToSVG(map, grp, svg) {
 
                 // get max width and height of animation frames
                 const maxWidth = Math.max(...animationTiles.map(t => t.pixels.length));
-                const maxHeight = Math.max(...animationTiles.map(t => t.pixels[0].length));
-
-                // get max x and y animation offsets (positive and negative)
-                const maxPositiveOffsetX = Math.max(0, ...animationTiles.filter(t => t.animation.offsetX >= 0).map(t => t.animation.offsetX));
-                const maxPositiveOffsetY = Math.max(0, ...animationTiles.filter(t => t.animation.offsetY >= 0).map(t => t.animation.offsetY));
-                const maxNegativeOffsetX = Math.abs(Math.min(0, ...animationTiles.filter(t => t.animation.offsetX <= 0).map(t => t.animation.offsetX)));
-                const maxNegativeOffsetY = Math.abs(Math.min(0, ...animationTiles.filter(t => t.animation.offsetY <= 0).map(t => t.animation.offsetY)));
+                const maxHeight = Math.max(...animationTiles.map(t => t.pixels[0].length));     
 
                 // sum everything to determine sprite size (ensure that width and height are even numbers)
-                const width = ((maxWidth + maxPositiveOffsetX + maxNegativeOffsetX) | 1) + 1;
-                const height = ((maxHeight + maxPositiveOffsetY + maxNegativeOffsetY) | 1) + 1;
+                const width = ((maxWidth + Math.max(...animationTiles.map(t => Math.abs(t.animation.offsetX))) * 2) | 1) + 1;
+                const height = ((maxHeight + Math.max(...animationTiles.map(t => Math.abs(t.animation.offsetY))) * 2) | 1) + 1;
 
                 const images = [];                
 
