@@ -32,10 +32,10 @@ function MapToSVG(map, grp, svg) {
     const itemPicnums = Picnum.Items;
     const effectorPicnums = Object.values(Picnum.Effectors);
 
-    // this "caches" all tile and animation data for it to be used by the <pattern> tags, reducing a lot of memory
+    // this function "caches" all tile and animation data for it to be used by the <pattern> tags
     // every combination of [picnum + shade + swap + alternate] generates a separate entry in the cache
     // this also returns the width and height of the tile (considering animation offsets)
-    const cacheTileAndAnimation = (picnum, shade, swap, alternate) => {
+    const cacheTile = (picnum, shade, swap, alternate) => {
         
         // generate unique identifier for this tile combination
         const id = `${picnum}_${shade}_${swap}_${alternate}`;
@@ -252,6 +252,10 @@ function MapToSVG(map, grp, svg) {
         //     </defs>
         // `);
 
+        //     <pattern id="sprite-${index}-pattern" width="${w}" height="${h}" x="${x}" y="${y}" patternUnits="userSpaceOnUse">
+        //         <use href="#${sprite.picnum}_${sprite.shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
+        //     </pattern>
+
     }
 
     // walls (ignore for now)
@@ -309,7 +313,7 @@ function MapToSVG(map, grp, svg) {
         }
         
         // cache tile and animation data
-        const {width, height} = cacheTileAndAnimation(sprite.picnum, sprite.shade, swap, alternate);        
+        const {width, height} = cacheTile(sprite.picnum, sprite.shade, swap, alternate);        
 
         const w = floor ? (width * 16) * (sprite.xrepeat / 64) : (width * 8);
         const h = floor ? (height * 16) * (sprite.yrepeat / 64) : (height * 8);
@@ -318,41 +322,31 @@ function MapToSVG(map, grp, svg) {
         const angle = floor ? (sprite.ang / 2048) * 360 + 90 : 0;
         const alpha = t0 ? 0.0 : (t2 ? 0.3 : (t1 ? 0.6 : 1.0));
 
-        // create pattern for rectangle (this is the only way to scale and translate)
-        // TO-DO => check if it is possible to do this without a <pattern> since we don't need it to repeat here
-        patterns.push(`
-            <pattern id="sprite-${index}-pattern" width="${w}" height="${h}" x="${x}" y="${y}" patternUnits="userSpaceOnUse">
-                <use href="#${sprite.picnum}_${sprite.shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
-            </pattern>
-        `);
-
-        const image = `
-            <rect          
-                width="${w}" 
-                height="${h}" 
-                x="${x}" 
-                y="${y}" 
-                fill="url(#sprite-${index}-pattern)"
+        const element = `
+            <use 
+                href="#${sprite.picnum}_${sprite.shade}_${swap}_${alternate}"
                 opacity="${alpha}"
-                transform="                
-                    rotate(${angle} ${sprite.x} ${sprite.y})     
-                    ${flipx ? `translate(${x * 2 + w},0) scale(-1,1)` : ""}
-                    ${flipy ? `translate(0,${y * 2 + h}) scale(1,-1)` : ""}
+                transform="                    
+                    translate(${x},${y})                    
+                    rotate(${angle} ${w/2} ${h/2})
+                    ${flipx ? `translate(${w},0) scale(-1,1)` : ""}
+                    ${flipy ? `translate(0,${h}) scale(1,-1)` : ""}     
+                    scale(${w / width},${h / height})                                  
                 "
             />
         `;
 
         switch (true) {
             case sprite.cstat.hasBit(SpriteCstat.FloorAligned): {
-                floorSprites.push({ z: sprite.z, image: image });
+                floorSprites.push({ z: sprite.z, element: element });
                 break;
             }
             case itemPicnums.includes(sprite.picnum): {
-                itemSprites.push({ z: sprite.z, image: image });
+                itemSprites.push({ z: sprite.z, element: element });
                 break;
             }
             default: {
-                cameraSprites.push({ z: sprite.z, image: image });
+                cameraSprites.push({ z: sprite.z, element: element });
                 break;
             }
         }
@@ -369,9 +363,9 @@ function MapToSVG(map, grp, svg) {
     `);
 
     elements.push(...sectorPaths.sort((a, b) => b.z - a.z).map(p => p.path));
-    elements.push(...floorSprites.sort((a, b) => b.z - a.z).map(s => s.image));
-    elements.push(...cameraSprites.sort((a, b) => b.z - a.z).map(s => s.image));
-    elements.push(...itemSprites.sort((a, b) => b.z - a.z).map(s => s.image));
+    elements.push(...floorSprites.sort((a, b) => b.z - a.z).map(s => s.element));
+    elements.push(...cameraSprites.sort((a, b) => b.z - a.z).map(s => s.element));
+    elements.push(...itemSprites.sort((a, b) => b.z - a.z).map(s => s.element));
 
     svg.insertAdjacentHTML("beforeend", elements.join(""));
 
