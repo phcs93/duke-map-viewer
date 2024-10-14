@@ -27,14 +27,13 @@ function MapToSVG(map, grp, svg) {
     const floorSprites = [];
     const cameraSprites = [];
     const itemSprites = [];
-    const animations = [];
 
     const itemPicnums = Picnum.Items;
     const effectorPicnums = Object.values(Picnum.Effectors);
 
     // this function "caches" all tile and animation data for it to be used by the <pattern> tags
     // every combination of [picnum + shade + swap + alternate] generates a separate entry in the cache
-    // this also returns the width and height of the tile (considering animation offsets)
+    // this reduces a lot of memory and makes a single loop for each animation
     const cacheTile = (picnum, shade, swap, alternate) => {
         
         // generate unique identifier for this tile combination
@@ -51,7 +50,7 @@ function MapToSVG(map, grp, svg) {
             // if tile has no animation
             if (!animation.frames) { 
 
-                const tile = grp.Tiles[picnum].pixels;                
+                const tile = grp.Tiles[picnum].pixels.length > 0 ? grp.Tiles[picnum].pixels : [[255]];
                 const dataURL = TileToCanvas(tile, colors).toDataURL();
 
                 tiles[id] = `<image 
@@ -109,29 +108,18 @@ function MapToSVG(map, grp, svg) {
                     }
                 }
 
-                // get max width and height of animation frames
-                const maxWidth = Math.max(...animationTiles.map(t => t.pixels.length));
-                const maxHeight = Math.max(...animationTiles.map(t => t.pixels[0].length));     
-
-                // sum everything to determine sprite size (ensure that width and height are even numbers)
-                const width = ((maxWidth + Math.max(...animationTiles.map(t => Math.abs(t.animation.offsetX))) * 2) | 1) + 1;
-                const height = ((maxHeight + Math.max(...animationTiles.map(t => Math.abs(t.animation.offsetY))) * 2) | 1) + 1;
-
                 const images = [];                
 
                 for (let i = 0; i < animationTiles.length; i++) {
-                    const animation = animationTiles[i].animation;
-                    const offsetX = Math.round((width - animationTiles[i].pixels.length) / 2) + -animation.offsetX;
-                    const offsetY = Math.round((height - animationTiles[i].pixels[0].length) / 2) + -animation.offsetY;
-                    const tile = animationTiles[i].pixels.offset("x", offsetX, 255).offset("y", offsetY, 255);
+                    const tile = animationTiles[i].pixels;
                     const dataUrl = TileToCanvas(tile, colors).toDataURL();
                     images.push(`
-                        <image 
+                        <image
                             id="${id}_${i}" 
                             width="${tile.length}" 
-                            height="${tile[0].length}" 
+                            height="${tile[0].length}"
                             href="${dataUrl}" 
-                            preserveAspectRatio="none"
+                            preserveAspectRatio="none"                            
                         />
                     `);
                 }
@@ -145,16 +133,26 @@ function MapToSVG(map, grp, svg) {
                             attributeName="href"
                             values="${images.map((_, i) => `#${id}_${i}`).join(";")}"
                             dur="${speed}ms"
+                            calcMode="discrete"
+                            repeatCount="indefinite"
+                        />
+                        <animate
+                            attributeName="x"
+                            values="${animationTiles.map(t => Math.round(Math.round(grp.Tiles[picnum].pixels.length/2)-(t.pixels.length/2)) + -t.animation.offsetX).join(";")}"
+                            dur="${speed}ms"
+                            calcMode="discrete"
+                            repeatCount="indefinite"
+                        />
+                        <animate
+                            attributeName="y"
+                            values="${animationTiles.map(t => Math.round(Math.round(grp.Tiles[picnum].pixels[0].length/2)-(t.pixels[0].length/2)) + -t.animation.offsetY).join(";")}"
+                            dur="${speed}ms"
+                            calcMode="discrete"
                             repeatCount="indefinite"
                         />
                     </use>
                 
                 `;
-
-                sizes[id] = {
-                    width: width,
-                    height: height
-                };
 
             }
 
@@ -169,31 +167,11 @@ function MapToSVG(map, grp, svg) {
     for (const i in map.Sectors) {
 
         const sector = map.Sectors[i];
-
-        const walls = [];
-        let first = true;
-        let firstIndex = sector.wallptr;
-        for (let w = sector.wallptr; w < sector.wallptr + sector.wallnum; w++) {
-            walls.push({ wall: map.Walls[w], type: first ? "M" : "L" });
-            if (map.Walls[w].point2 !== firstIndex) {
-                first = false;
-            } else {
-                first = true;
-                firstIndex = w + 1;
-            }
-        }
-        const d = walls.map(w => `${(w.type)}${w.wall.x} ${w.wall.y}`).join(" ");
-        //const path = `<path id="${i}" d="${d} Z" fill="url(#sector-index-${i})" rule="evenodd" />`;
-        const path = `<path id="${i}" d="${d} Z" fill="#555555" rule="evenodd" />`;
-        sectorPaths.push({ z: sector.floorz, path: path });
-
+        const tile = grp.Tiles[sector.floorpicnum].pixels;
         const picnum = sector.floorpicnum;
-        let tile = grp.Tiles[picnum].pixels;
-
-        const shade = sector.floorshade > 31 ? 31 : (sector.floorshade < 0 ? 0 : sector.floorshade);
+        const shade = sector.floorshade;
         const swap = sector.floorpal || null;
         const alternate = sector.lotag === 2 ? (sector.ceilingpicnum === 200 ? 1 : 0) : null;
-        const colors = grp.GetColors(shade, swap, alternate);
 
         const smooth = sector.floorstat.hasBit(SectorCstat.DoubleSmooshiness);
         const swapxy = sector.floorstat.hasBit(SectorCstat.SwapXY);
@@ -201,42 +179,73 @@ function MapToSVG(map, grp, svg) {
         const flipy = sector.floorstat.hasBit(SectorCstat.FlipY);
         const relativity = sector.floorstat.hasBit(SectorCstat.AlignTextureToFirstWallOfSector);
 
-        let width = 0;
-        let height = 0;
-        let x = 0;
-        let y = 0;
-        let a = 0;
+        // cache tile and animation data
+        cacheTile(picnum, sector.floorshade, swap, alternate);
 
-        if (!swapxy) {
-            width = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
-            height = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
-            // x = -((sector.floorxpanning * width) / 255);
-            // y = -((sector.floorypanning * height) / 255);
-            // a = 0;
-        } else {
-            width = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
-            height = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
-            // y = -((sector.floorxpanning * width) / 255);
-            // x = -((sector.floorypanning * height) / 255);
-            // a = 0;
-        }
+        const width = tile.length ? tile.length : 1;
+        const height = tile[0] ? tile[0].length : 1;
 
-        if (relativity) {
+        const w = width * (smooth ? 8 : 16);
+        const h = height * (smooth ? 8 : 16);
 
-            const wall1 = map.Walls[sector.wallptr];
-            const wall2 = map.Walls[wall1.point2];
-            a += Math.atan2(wall1.y - wall2.y, wall1.x - wall2.x) * (180 / Math.PI);
-            if (swapxy) {
-                x = wall1.y;
-                y = wall1.x;
+        const d = [];
+
+        for (let w = sector.wallptr; w < sector.wallptr + sector.wallnum; w++) {
+
+            // if wall index is the first OR previous point2 is smaller than previous index => MOVETO else LINETO
+            if (w === sector.wallptr || map.Walls[w - 1].point2 < w - 1) {
+                d.push(`M${map.Walls[w].x} ${map.Walls[w].y}`);
             } else {
-                x = wall1.x;
-                y = wall1.y;
+                d.push(`L${map.Walls[w].x} ${map.Walls[w].y}`);
             }
+
         }
 
-        tile = tile.map(a => a.toReversed());
-        const dataURL = TileToCanvas(tile, colors, null).toDataURL();
+        const path = `
+            <pattern id="${i}" width="${w}" height="${h}" x="${0}" y="${0}" patternUnits="userSpaceOnUse">
+                <use href="#${picnum}_${shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
+            </pattern>
+            <path d="${d.join(" ")} Z" fill="url(#${i})" rule="evenodd" />
+        `;
+        //const path = `<path id="${i}" d="${d.join(" ")} Z" fill="#555555" rule="evenodd" />`;
+        sectorPaths.push({ z: sector.floorz, path: path });        
+
+        // let width = 0;
+        // let height = 0;
+        // let x = 0;
+        // let y = 0;
+        // let a = 0;
+
+        // if (!swapxy) {
+        //     width = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
+        //     height = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
+        //     // x = -((sector.floorxpanning * width) / 255);
+        //     // y = -((sector.floorypanning * height) / 255);
+        //     // a = 0;
+        // } else {
+        //     width = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
+        //     height = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
+        //     // y = -((sector.floorxpanning * width) / 255);
+        //     // x = -((sector.floorypanning * height) / 255);
+        //     // a = 0;
+        // }
+
+        // if (relativity) {
+
+        //     const wall1 = map.Walls[sector.wallptr];
+        //     const wall2 = map.Walls[wall1.point2];
+        //     a += Math.atan2(wall1.y - wall2.y, wall1.x - wall2.x) * (180 / Math.PI);
+        //     if (swapxy) {
+        //         x = wall1.y;
+        //         y = wall1.x;
+        //     } else {
+        //         x = wall1.x;
+        //         y = wall1.y;
+        //     }
+
+        // }
+
+        //tile = tile.map(a => a.toReversed());
 
         // defs.push(`
         //     <defs>
@@ -307,7 +316,10 @@ function MapToSVG(map, grp, svg) {
         }
         
         // cache tile and animation data
-        const {width, height} = cacheTile(sprite.picnum, sprite.shade, swap, alternate);        
+        cacheTile(sprite.picnum, sprite.shade, swap, alternate);
+
+        const width = tile.length;
+        const height = tile[0].length;
 
         const w = floor ? (width * 16) * (sprite.xrepeat / 64) : (width * 8);
         const h = floor ? (height * 16) * (sprite.yrepeat / 64) : (height * 8);
