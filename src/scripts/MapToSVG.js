@@ -1,5 +1,15 @@
 function MapToSVG(map, grp, svg) {
 
+    // ===========================
+    // fix wrong offsets from GRP (probably a mistake by 3DRealms)
+    // ===========================
+
+    // acid tile from DN3D
+    grp.Tiles[202].animation.offsetX = 0;
+    grp.Tiles[202].animation.offsetY = 0;
+
+    // ===========================
+
     if (!svg) svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "http://www.w3.org/2000/svg");
     svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -21,7 +31,6 @@ function MapToSVG(map, grp, svg) {
     svg.viewBox.baseVal.height = height;
 
     const tiles = {};
-    const sizes = {};
     const patterns = [];
     const sectorPaths = [];
     const floorSprites = [];
@@ -60,11 +69,6 @@ function MapToSVG(map, grp, svg) {
                     href="${dataURL}" 
                     preserveAspectRatio="none"
                 />`;
-
-                sizes[id] = {
-                    width: tile.length,
-                    height: tile[0].length
-                };
 
             } else {
 
@@ -157,9 +161,6 @@ function MapToSVG(map, grp, svg) {
             }
 
         }
-
-        // return cached tile infomation (width and height)
-        return sizes[id];
 
     };
 
