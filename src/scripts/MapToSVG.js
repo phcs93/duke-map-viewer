@@ -126,7 +126,7 @@ function MapToSVG(map, grp, svg) {
 
                 tiles[id] = `
                 
-                    ${images.join("")}                
+                    ${images.join("")}
 
                     <use id="${id}" href="#${id}_0">
                         <animate
@@ -201,6 +201,7 @@ function MapToSVG(map, grp, svg) {
 
         }
 
+        // TO-DO => solve offset animation not "overflowing" correctly outside the w and h
         const path = `
             <pattern id="${i}" width="${w}" height="${h}" x="${0}" y="${0}" patternUnits="userSpaceOnUse">
                 <use href="#${picnum}_${shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
