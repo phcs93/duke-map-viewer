@@ -247,56 +247,7 @@ function MapToSVG(map, grp, svg) {
             <path d="${d.join(" ")} Z" fill="url(#${i})" rule="evenodd" />
         `;
 
-        sectorPaths.push({ z: sector.floorz, path: path });        
-
-        // let width = 0;
-        // let height = 0;
-        // let x = 0;
-        // let y = 0;
-        // let a = 0;
-
-        // if (!swapxy) {
-        //     width = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
-        //     height = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
-        //     // x = -((sector.floorxpanning * width) / 255);
-        //     // y = -((sector.floorypanning * height) / 255);
-        //     // a = 0;
-        // } else {
-        //     width = tile.length > 0 ? tile[0].length * (smooth ? 8 : 16) : 1;
-        //     height = tile.length > 0 ? tile.length * (smooth ? 8 : 16) : 1;
-        //     // y = -((sector.floorxpanning * width) / 255);
-        //     // x = -((sector.floorypanning * height) / 255);
-        //     // a = 0;
-        // }
-
-        // if (relativity) {
-
-        //     const wall1 = map.Walls[sector.wallptr];
-        //     const wall2 = map.Walls[wall1.point2];
-        //     a += Math.atan2(wall1.y - wall2.y, wall1.x - wall2.x) * (180 / Math.PI);
-        //     if (swapxy) {
-        //         x = wall1.y;
-        //         y = wall1.x;
-        //     } else {
-        //         x = wall1.x;
-        //         y = wall1.y;
-        //     }
-
-        // }
-
-        //tile = tile.map(a => a.toReversed());
-
-        // defs.push(`
-        //     <defs>
-        //         <pattern id="sector-index-${i}" width="${width}" height="${height}" x="${x}" y="${y}" patternTransform="rotate(${a})" patternUnits="userSpaceOnUse">
-        //             <image id="sector-index-${i}-image" width="${width}" height="${height}" href="${dataURL}" />
-        //         </pattern>
-        //     </defs>
-        // `);
-
-        //     <pattern id="sprite-${index}-pattern" width="${w}" height="${h}" x="${x}" y="${y}" patternUnits="userSpaceOnUse">
-        //         <use href="#${sprite.picnum}_${sprite.shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
-        //     </pattern>
+        sectorPaths.push({ z: sector.floorz, path: path });
 
     }
 
