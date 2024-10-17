@@ -234,7 +234,7 @@ function MapToSVG(map, grp, svg) {
         const path = `
             <pattern id="${i}" width="${w}" height="${h}" patternUnits="userSpaceOnUse" patternTransform="
                 rotate(${relativity ? `${angle},${-x}, ${-y}` : `${-angle}, 0, 0`})
-                ${relativity ? `translate(${-x},${y})` : ""}
+                ${relativity ? `translate(${-x},${-y})` : ""}
                 ${mirrored ? `translate(${w},0) scale(-1,1)` : ""}                               
                 ${relativity ? `` : `translate(0,${h}) scale(1,-1)`}
                 translate(${-panx},${-pany})
