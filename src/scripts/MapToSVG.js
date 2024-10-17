@@ -40,7 +40,7 @@ function MapToSVG(map, grp, svg) {
     const itemPicnums = Picnum.Items;
     const effectorPicnums = Object.values(Picnum.Effectors);
 
-    // this function "caches" all tile and animation data for it to be used by the <pattern> tags
+    // this function "caches" all tile and animation data for it to be reused by the <pattern> and <use> tags
     // every combination of [picnum + shade + swap + alternate] generates a separate entry in the cache
     // this reduces a lot of memory and makes a single loop for each animation
     const cacheTile = (picnum, shade, swap, alternate) => {
@@ -49,7 +49,7 @@ function MapToSVG(map, grp, svg) {
         const id = `${picnum}_${shade}_${swap}_${alternate}`;
 
         // get colors for this tile combination
-        const colors = grp.GetColors(shade, swap, null);
+        const colors = grp.GetColors(shade, swap, alternate);
 
         // add tile to cache if not already there
         if (!tiles[id]) {
@@ -163,6 +163,20 @@ function MapToSVG(map, grp, svg) {
         }
 
     };
+    
+    // get floor texture angle of rotation and wheter it's X mirrored or not
+    const getAngleAndMirrored = (swapxy, flipx, flipy) => {
+        switch (true) {
+            case (!swapxy && !flipx && !flipy): return { angle: 0, mirrored: false }
+            case ( swapxy && !flipx &&  flipy): return { angle: 90, mirrored: false }
+            case (!swapxy &&  flipx &&  flipy): return { angle: 180, mirrored: false }
+            case ( swapxy &&  flipx && !flipy): return { angle: 270, mirrored: false }
+            case (!swapxy &&  flipx && !flipy): return { angle: 0, mirrored: true }
+            case ( swapxy &&  flipx &&  flipy): return { angle: 90, mirrored: true }
+            case (!swapxy && !flipx &&  flipy): return { angle: 180, mirrored: true }
+            case ( swapxy && !flipx && !flipy): return { angle: 270, mirrored: true }
+        }
+    }
 
     // sectors
     for (const i in map.Sectors) {
@@ -178,16 +192,31 @@ function MapToSVG(map, grp, svg) {
         const swapxy = sector.floorstat.hasBit(SectorCstat.SwapXY);
         const flipx = sector.floorstat.hasBit(SectorCstat.FlipX);
         const flipy = sector.floorstat.hasBit(SectorCstat.FlipY);
-        const relativity = sector.floorstat.hasBit(SectorCstat.AlignTextureToFirstWallOfSector);
-
-        // cache tile and animation data
-        cacheTile(picnum, sector.floorshade, swap, alternate);
+        const relativity = sector.floorstat.hasBit(SectorCstat.AlignTextureToFirstWallOfSector);        
 
         const width = tile.length ? tile.length : 1;
         const height = tile[0] ? tile[0].length : 1;
 
         const w = width * (smooth ? 8 : 16);
         const h = height * (smooth ? 8 : 16);
+        let panx = (sector.floorxpanning * w) / 255;
+        let pany = (sector.floorypanning * h) / 255;
+        let x = 0;
+        let y = 0;
+
+        let { angle, mirrored } = getAngleAndMirrored(swapxy, flipx, flipy);
+
+        if (relativity) {
+            const wall1 = map.Walls[sector.wallptr];
+            const wall2 = map.Walls[wall1.point2];
+            const a = Math.atan2(wall1.y - wall2.y, wall1.x - wall2.x) * (180 / Math.PI) - 180;            
+            angle += a;
+            x += -wall1.x;
+            y += -wall1.y;            
+        }
+
+        // cache tile and animation data
+        cacheTile(picnum, sector.floorshade, swap, alternate);
 
         const d = [];
 
@@ -202,14 +231,22 @@ function MapToSVG(map, grp, svg) {
 
         }
 
-        // TO-DO => solve offset animation not "overflowing" correctly outside the w and h
         const path = `
-            <pattern id="${i}" width="${w}" height="${h}" x="${0}" y="${0}" patternUnits="userSpaceOnUse">
-                <use href="#${picnum}_${shade}_${swap}_${alternate}" transform="scale(${w / width},${h / height})" />
+            <pattern id="${i}" width="${w}" height="${h}" patternUnits="userSpaceOnUse" patternTransform="
+                rotate(${relativity ? `${angle},${-x}, ${-y}` : `${-angle}, 0, 0`})
+                ${relativity ? `translate(${-x},${y})` : ""}
+                ${mirrored ? `translate(${w},0) scale(-1,1)` : ""}                               
+                ${relativity ? `` : `translate(0,${h}) scale(1,-1)`}
+                translate(${-panx},${-pany})
+            ">
+                <use 
+                    href="#${picnum}_${shade}_${swap}_${alternate}" 
+                    transform="scale(${w / width},${h / height})"
+                />
             </pattern>
             <path d="${d.join(" ")} Z" fill="url(#${i})" rule="evenodd" />
         `;
-        //const path = `<path id="${i}" d="${d.join(" ")} Z" fill="#555555" rule="evenodd" />`;
+
         sectorPaths.push({ z: sector.floorz, path: path });        
 
         // let width = 0;
