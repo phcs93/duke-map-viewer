@@ -22,9 +22,24 @@ div.page {
 .filter {
     margin: 0px;
     margin-top: 8px;
+    &:not(:placeholder-shown) {
+        border-width: 1px;
+        border-style: solid;
+        animation: blink 0.5s ease-in-out infinite;
+    }
 }
 
-
+@keyframes blink {
+    0% {
+        border-color: #000000;
+    }
+    50% {
+        border-color: #FFFFFF;
+    }
+    100% {
+        border-color: #000000;
+    }
+}
 
 label {
     font-family: "Candara";

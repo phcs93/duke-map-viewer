@@ -24,8 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     Globals.GRP = new GRP(new Uint8Array(await (await fetch(`bin/custom_duke3d.grp`)).arrayBuffer()));    
     // throw away file bytes from GRP after serialization to reduce memory consuption
     Globals.GRP.Files = [];  
-    console.log(Globals.GRP);
-
+    
     // ================================================
     // map filter page 
     // ================================================

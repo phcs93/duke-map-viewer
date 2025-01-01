@@ -1,3 +1,5 @@
+//const ByteReader = require("../scripts/ByteReader");
+
 function Map (bytes, name) {
 
     const reader = new ByteReader(bytes);
