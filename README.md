@@ -19,3 +19,12 @@ https://phcs93.github.io/duke-map-viewer/
 - sprites
   - render spawn angle
   - render player 1
+
+- map rating
+  - this would require a server of some sort
+    - maybe a better ideia is to "classify" some known maps, for example:
+      - arenas
+      - maps full of secrets (fran maps)
+      - good balanced maps for DM (roch, etc)
+      - garbage maps (unplayable maps with no items or just plain empty rooms)
+      - etc...
