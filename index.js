@@ -24,7 +24,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     Globals.GRP = new GRP(new Uint8Array(await (await fetch(`bin/custom_duke3d.grp`)).arrayBuffer()));    
     // throw away file bytes from GRP after serialization to reduce memory consuption
     Globals.GRP.Files = [];      
-        
+    
+    // picnum finder
+    console.log(Globals.GRP);
+    const picnumToFind = 4327;
+    console.log(`looking for picnum [${picnumToFind}]...`);
+    for (const map of Globals.GRP.Maps) {
+        for (const sector of map.Sectors) {
+            if (sector.floorpicnum === picnumToFind || sector.ceilingpicnum === picnumToFind) {
+                console.log(map.Name);
+                console.log(sector);
+            }
+        }       
+        for (const wall of map.Walls) {
+            if (wall.picnum === picnumToFind) {
+                console.log(map.Name);
+                console.log(wall);
+            }
+        } 
+        for (const sprite of map.Sprites) {
+            if (sprite.picnum === picnumToFind) {
+                console.log(map.Name);
+                console.log(sprite);
+            }
+        }
+    }
+    console.log("done searching!");
+    
     // ================================================
     // map filter page 
     // ================================================

@@ -26,5 +26,6 @@ https://phcs93.github.io/duke-map-viewer/
       - arenas
       - maps full of secrets (fran maps)
       - good balanced maps for DM (roch, etc)
+      - tdm/ctf maps
       - garbage maps (unplayable maps with no items or just plain empty rooms)
       - etc...
